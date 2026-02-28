@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decoded — Corporate Jargon &amp; Business Speak Translator</title>
+    <meta name="description" content="A searchable dictionary of corporate jargon with painfully accurate plain-English translations.">
+    <meta property="og:title" content="Decoded — Corporate Jargon Translator">
+    <meta property="og:description" content="A searchable dictionary of corporate jargon with painfully accurate plain-English translations.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ehq.cl/jargon">
+    <meta property="og:site_name" content="Energon">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Decoded — Corporate Jargon Translator">
+    <meta name="twitter:description" content="A searchable dictionary of corporate jargon with painfully accurate plain-English translations.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ehq.cl/jargon">
+    <meta name="theme-color" content="#040714">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png" />
+    <style>
+        /* ── Reset & base ─────────────────────────────────────────────────── */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #040714;
+            --surface-1: rgba(255,255,255,.03);
+            --surface-2: rgba(255,255,255,.06);
+            --border-subtle: rgba(255,255,255,.07);
+            --border: rgba(255,255,255,.1);
+            --border-strong: rgba(255,255,255,.22);
+            --text-primary: #f9f9f9;
+            --text-secondary: #cacaca;
+            --text-muted: rgba(255,255,255,.45);
+            --accent: #0063e5;
+            --accent-bright: #0080ff;
+            --font: 'Avenir Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            --text-xs:   0.75rem;
+            --text-sm:   0.875rem;
+            --text-base: 1rem;
+            --text-lg:   1.125rem;
+            --text-xl:   1.25rem;
+            --text-2xl:  1.5rem;
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-6: 24px;
+            --space-8: 32px;
+            --radius-sm: 6px;
+            --radius: 10px;
+            --radius-lg: 15px;
+            --ease-snap: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --dur-fast: 120ms;
+            --dur: 200ms;
+        }
+
+        body {
+            font-family: 'Avenir Next', -apple-system, BlinkMacSystemFont,
+                         'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #040714;
+            min-height: 100vh;
+            color: #f9f9f9;
+            display: flex; flex-direction: column;
+        }
+        .container { flex: 1; width: 100%; max-width: 900px; margin: 0 auto; padding: 30px; }
+
+        /* ── Header ───────────────────────────────────────────────────────── */
+        .header-bar {
+            background: linear-gradient(135deg, #B015B0 0%, #3D0080 45%, #080010 100%);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,.07);
+            padding: 0 24px; height: 68px;
+            position: sticky; top: 0; z-index: 200;
+            display: flex; align-items: center;
+        }
+        .header-logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+        .header-logo-img { height: 36px; width: auto; flex-shrink: 0; filter: brightness(0) invert(1); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); display: block; }
+        .header-logo-img:hover { transform: scale(1.14) rotate(-9deg); }
+        .header-logo h1 { font-size: 1.2em; font-weight: 600; color: #f9f9f9; letter-spacing: .5px; }
+        .header-subtitle { font-size: .82em; color: rgba(255,255,255,.72); font-weight: 500; margin-top: 3px; }
+
+        nav { display: flex; gap: 5px; margin-left: auto; }
+        nav a {
+            color: #f0f0f0; text-decoration: none; padding: 7px 15px;
+            border-radius: 5px; transition: all .2s; font-size: .92em; font-weight: 500;
+        }
+        nav a:hover  { background: rgba(233,30,120,.14); }
+        nav a.active { background: rgba(233,30,120,.28); }
+
+        .header-home {
+            display: flex; align-items: center; margin-left: 5px; padding: 5px;
+            color: rgba(255,255,255,0.9); text-decoration: none; border-radius: 6px;
+            transition: color .2s, background .2s; flex-shrink: 0;
+        }
+        .header-home:hover { color: #fff; background: rgba(255,255,255,0.12); }
+        .header-home svg { width: 34px; height: 34px; display: block; }
+
+        /* ── Hamburger toggle ─────────────────────────────────────────────── */
+        .nav-toggle {
+            display: none; background: none; border: none;
+            color: rgba(255,255,255,.65); cursor: pointer;
+            padding: 6px; border-radius: 5px; margin-left: 10px;
+            align-items: center; justify-content: center;
+        }
+        .nav-toggle[aria-expanded="true"] { background: rgba(255,255,255,.1); color: #fff; }
+
+        @media (max-width: 540px) {
+            .nav-toggle { display: flex; }
+            nav {
+                display: none; width: 100%; order: 10; margin-left: 0;
+                flex-direction: column; gap: 2px; padding: 6px 0 10px;
+                border-top: 1px solid rgba(255,255,255,.07);
+            }
+            nav.open { display: flex; }
+            nav a { padding: 10px 6px; font-size: .95em; }
+            .header-bar { flex-wrap: wrap; }
+            .header-logo { flex: 1; }
+            .container { padding: 20px; }
+            .header-bar { padding: 0 16px; }
+        }
+
+        /* ── Intro card ───────────────────────────────────────────────────── */
+        .intro-card {
+            background: rgba(255,255,255,.03);
+            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 15px; padding: 30px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 20px; text-align: center;
+        }
+        .intro-label {
+            display: block; font-size: .8em; font-weight: 500;
+            color: rgba(255,255,255,.4); letter-spacing: .5px;
+            text-transform: uppercase; margin-bottom: 8px;
+        }
+        .intro-quote {
+            font-size: 1.75em; color: rgba(255,255,255,.88);
+            font-style: italic; font-weight: 600; letter-spacing: -.3px;
+            margin-bottom: 24px;
+        }
+
+        /* ── Search input ─────────────────────────────────────────────────── */
+        .search-wrap { position: relative; max-width: 480px; margin: 0 auto 20px; }
+        .search-wrap svg {
+            position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+            color: rgba(255,255,255,.3); pointer-events: none;
+        }
+        .search-input {
+            width: 100%;
+            background: rgba(255,255,255,.05);
+            border: 1.5px solid rgba(255,255,255,.15);
+            border-radius: 12px; color: #f9f9f9;
+            padding: 12px 16px 12px 42px;
+            font-size: 1em; font-family: inherit; font-weight: 500;
+            outline: none; transition: border-color .2s, background .2s, box-shadow .2s;
+        }
+        .search-input::placeholder { color: #555; }
+        .search-input:hover { border-color: rgba(0,99,229,.6); background: rgba(0,99,229,.07); }
+        .search-input:focus { border-color: #0063e5; background: rgba(0,99,229,.1); box-shadow: 0 0 0 3px rgba(0,99,229,.2); }
+
+        /* ── Category filter pills ────────────────────────────────────────── */
+        .filter-pills { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+        .pill {
+            background: rgba(255,255,255,.05);
+            border: 1.5px solid rgba(255,255,255,.12);
+            border-radius: 20px; color: rgba(255,255,255,.5);
+            padding: 5px 14px; font-size: .8em; font-weight: 600;
+            cursor: pointer; transition: all .2s; letter-spacing: .3px;
+            text-transform: uppercase; user-select: none;
+        }
+        .pill:hover { border-color: rgba(255,255,255,.3); color: rgba(255,255,255,.8); }
+        .pill.active { border-color: var(--pill-color); color: var(--pill-color); background: rgba(var(--pill-rgb),.12); }
+        .pill[data-cat="all"]  { --pill-color: #f9f9f9; --pill-rgb: 249,249,249; }
+        .pill[data-cat="pm"]   { --pill-color: #a78bfa; --pill-rgb: 167,139,250; }
+        .pill[data-cat="mgr"]  { --pill-color: #fb923c; --pill-rgb: 251,146,60; }
+        .pill[data-cat="exec"] { --pill-color: #f472b6; --pill-rgb: 244,114,182; }
+        .pill[data-cat="dev"]  { --pill-color: #34d399; --pill-rgb: 52,211,153; }
+        .pill[data-cat="hr"]   { --pill-color: #60a5fa; --pill-rgb: 96,165,250; }
+        .pill[data-cat="scrum"]{ --pill-color: #fbbf24; --pill-rgb: 251,191,36; }
+        .pill[data-cat="infra"]{ --pill-color: #22d3ee; --pill-rgb: 34,211,238; }
+
+        /* ── Phrase list ──────────────────────────────────────────────────── */
+        #phrase-list { display: flex; flex-direction: column; gap: 10px; }
+
+        .phrase-card {
+            background: rgba(255,255,255,.03);
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 14px; padding: 20px 22px;
+            display: grid; grid-template-columns: 1fr auto;
+            gap: 10px 16px; align-items: start;
+            transition: border-color .2s, background .2s;
+            cursor: default;
+        }
+        .phrase-card:hover {
+            background: rgba(255,255,255,.05);
+            border-color: rgba(255,255,255,.14);
+        }
+
+        .phrase-text {
+            font-size: 1em; font-style: italic; font-weight: 500;
+            color: rgba(255,255,255,.55); line-height: 1.4;
+            grid-column: 1;
+        }
+        .phrase-text::before { content: '\201C'; }
+        .phrase-text::after  { content: '\201D'; }
+
+        .phrase-meaning {
+            font-size: .95em; font-weight: 600; color: #f0f0f0;
+            line-height: 1.45; grid-column: 1;
+            display: flex; align-items: baseline; gap: 8px;
+        }
+        .phrase-meaning::before {
+            content: '→';
+            color: #0063e5; font-style: normal; font-weight: 700;
+            font-size: .9em; flex-shrink: 0;
+        }
+        .phrase-meaning mark {
+            background: rgba(0,99,229,.35); color: #fff;
+            border-radius: 2px; padding: 0 2px; font-weight: inherit;
+        }
+        .phrase-text mark {
+            background: rgba(0,99,229,.35); color: rgba(255,255,255,.8);
+            border-radius: 2px; padding: 0 2px;
+        }
+
+        .phrase-tags {
+            display: flex; flex-wrap: wrap; gap: 5px;
+            grid-column: 2; grid-row: 1 / 3;
+            align-self: center; justify-content: flex-end;
+        }
+        .tag {
+            font-size: .68em; font-weight: 700; letter-spacing: .4px;
+            text-transform: uppercase; padding: 3px 8px;
+            border-radius: 10px; border: 1px solid; white-space: nowrap;
+        }
+        .tag-pm   { color: #a78bfa; border-color: rgba(167,139,250,.35); background: rgba(167,139,250,.1); }
+        .tag-mgr  { color: #fb923c; border-color: rgba(251,146,60,.35);  background: rgba(251,146,60,.1); }
+        .tag-exec { color: #f472b6; border-color: rgba(244,114,182,.35); background: rgba(244,114,182,.1); }
+        .tag-dev  { color: #34d399; border-color: rgba(52,211,153,.35);  background: rgba(52,211,153,.1); }
+        .tag-hr   { color: #60a5fa; border-color: rgba(96,165,250,.35);  background: rgba(96,165,250,.1); }
+        .tag-scrum{ color: #fbbf24; border-color: rgba(251,191,36,.35);  background: rgba(251,191,36,.1); }
+        .tag-infra{ color: #22d3ee; border-color: rgba(34,211,238,.35);  background: rgba(34,211,238,.1); }
+
+        .phrase-count {
+            text-align: center; color: rgba(255,255,255,.22);
+            font-size: .8em; padding: 16px 0 4px;
+        }
+        .no-results {
+            text-align: center; color: #555; padding: 40px;
+            font-size: .95em; grid-column: 1 / -1;
+        }
+
+        /* ── Footer ───────────────────────────────────────────────────────── */
+        .info-footer {
+            text-align: center; padding: 20px 24px 28px;
+            color: rgba(255,255,255,.22); font-size: .78em; line-height: 1.8;
+            border-top: 1px solid rgba(255,255,255,.05);
+            margin-top: 48px;
+        }
+
+        /* ── Focus rings (keyboard accessibility) ── */
+        .pill:focus-visible,
+        nav a:focus-visible {
+            outline: 2px solid #0063e5;
+            outline-offset: 2px;
+        }
+        .search-input:focus-visible {
+            border-color: #0063e5;
+            box-shadow: 0 0 0 3px rgba(0,99,229,.2);
+            outline: none;
+        }
+    </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Decoded — Corporate Jargon Translator",
+  "description": "A searchable dictionary of corporate jargon with painfully accurate plain-English translations.",
+  "url": "https://ehq.cl/jargon",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Organization", "name": "Energon", "url": "https://ehq.cl/" }
+}
+</script>
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────────────────────── -->
+<div class="header-bar">
+    <div class="header-logo">
+        <a href="https://ehq.cl/" target="_blank" rel="noopener noreferrer"><img src="../energon-classic-logo.png" class="header-logo-img" alt="Neorgon"></a>
+        <div>
+            <h1>Decoded</h1>
+            <div class="header-subtitle">Corporate Jargon Translator</div>
+        </div>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Menu" aria-expanded="false">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="6"  x2="21" y2="6"/>
+                <line x1="3" y1="12" x2="21" y2="12"/>
+                <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+        </button>
+    </div>
+    <nav id="main-nav">
+        <a href="../">Timezone</a>
+        <a href="." class="active">Decoded</a>
+    </nav>
+    <a href="https://ehq.cl/" class="header-home" title="ehq.cl" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    </a>
+</div>
+
+<!-- ── Main ────────────────────────────────────────────────────────────────── -->
+<div class="container">
+
+    <div class="intro-card">
+        <span class="intro-label">Decoded</span>
+        <div class="intro-quote" id="intro-quote">"we need to be more intentional about this"</div>
+
+        <div class="search-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input class="search-input" id="search-input" type="text"
+                   placeholder="Search phrases or translations…"
+                   autocomplete="off" spellcheck="false" aria-label="Search jargon">
+        </div>
+
+        <div class="filter-pills">
+            <button class="pill active" data-cat="all">All</button>
+            <button class="pill" data-cat="pm">PM</button>
+            <button class="pill" data-cat="mgr">Manager</button>
+            <button class="pill" data-cat="exec">Executive</button>
+            <button class="pill" data-cat="dev">Engineering</button>
+            <button class="pill" data-cat="hr">HR</button>
+            <button class="pill" data-cat="scrum">Scrum</button>
+            <button class="pill" data-cat="infra">Infra</button>
+        </div>
+    </div>
+
+    <div class="phrase-count" id="phrase-count"></div>
+    <div id="phrase-list"></div>
+
+</div>
+
+<footer class="info-footer">
+    Painfully accurate · No executives were harmed in the making of this page
+</footer>
+
+<script>
+'use strict';
+
+const PHRASES = [
+    // PM
+    { phrase: "Let's circle back on this",             meaning: "We're shelving this forever. Don't follow up.",                                   tags: ['pm','mgr'] },
+    { phrase: "Can you put a pin in that?",             meaning: "Please stop talking.",                                                            tags: ['pm','mgr'] },
+    { phrase: "We need to be more agile",               meaning: "We have no plan and will keep changing our minds.",                               tags: ['pm','mgr'] },
+    { phrase: "Let's take this offline",                meaning: "I don't want everyone to hear what I'm about to say.",                           tags: ['pm','mgr','exec'] },
+    { phrase: "We need to socialize this idea",         meaning: "I need someone else to take the blame if it fails.",                             tags: ['pm','mgr'] },
+    { phrase: "Can you add some color to that?",        meaning: "I have no idea what you just said.",                                             tags: ['pm','mgr','exec'] },
+    { phrase: "Can you double-click on that?",          meaning: "Explain it like I'm five.",                                                       tags: ['pm','exec'] },
+    { phrase: "This needs to be more user-centric",     meaning: "I read a tweet about our product and I didn't like it.",                         tags: ['pm'] },
+    { phrase: "Can we get a quick win here?",           meaning: "Do something visible before my performance review.",                             tags: ['pm','mgr'] },
+    { phrase: "It's on the roadmap",                    meaning: "It might happen sometime in 2027, or never.",                                    tags: ['pm'] },
+    { phrase: "Let's define success metrics",           meaning: "We'll cherry-pick whichever numbers look good later.",                           tags: ['pm','exec'] },
+    { phrase: "That's a great MVP",                     meaning: "This barely works but ship it anyway.",                                           tags: ['pm','dev'] },
+    { phrase: "We need to think outside the box",       meaning: "I don't like your solution but have nothing better.",                            tags: ['pm','mgr'] },
+    { phrase: "Let's do a deep dive",                   meaning: "Write a document nobody will ever read.",                                        tags: ['pm','mgr'] },
+    { phrase: "We should leverage existing assets",     meaning: "Use the thing we paid for but nobody actually uses.",                            tags: ['pm','exec'] },
+    { phrase: "This is a stretch goal",                 meaning: "We know this won't happen but it sounds ambitious.",                             tags: ['pm','mgr'] },
+    { phrase: "Let's get alignment on this",            meaning: "I don't trust you to do what I said without a meeting.",                         tags: ['pm','mgr'] },
+    { phrase: "Can you own this?",                      meaning: "I don't want to be responsible if this fails.",                                  tags: ['pm','mgr'] },
+    { phrase: "We need better visibility on this",      meaning: "I want someone to blame when it goes wrong.",                                    tags: ['pm','mgr'] },
+    { phrase: "This is a known issue",                  meaning: "Nobody is going to fix this. Ever.",                                             tags: ['pm','dev'] },
+    { phrase: "Let's ideate on this",                   meaning: "Let's have a long meeting where nobody takes notes.",                            tags: ['pm','mgr'] },
+    { phrase: "We're being very intentional here",      meaning: "We argued about this for three weeks.",                                          tags: ['pm','exec'] },
+    { phrase: "Can you give me a rough estimate?",      meaning: "I will hold you to this number in your next review.",                            tags: ['pm','mgr'] },
+    // Manager
+    { phrase: "My door is always open",                 meaning: "Please don't actually come in.",                                                 tags: ['mgr'] },
+    { phrase: "We're a family here",                    meaning: "We expect you to work unpaid overtime without complaining.",                     tags: ['mgr','hr'] },
+    { phrase: "I need this yesterday",                  meaning: "I forgot about this and panicked.",                                              tags: ['mgr'] },
+    { phrase: "Let me know if you have bandwidth",      meaning: "Please say yes. I'm not really asking.",                                         tags: ['mgr'] },
+    { phrase: "We need to be more proactive",           meaning: "React faster after things have already gone wrong.",                             tags: ['mgr'] },
+    { phrase: "Let's establish a cadence",              meaning: "We're adding another recurring meeting to your calendar.",                       tags: ['mgr'] },
+    { phrase: "This needs more polish",                 meaning: "I will keep requesting changes indefinitely.",                                   tags: ['mgr','pm'] },
+    { phrase: "Can you be more solutions-oriented?",    meaning: "Stop pointing out problems with my bad ideas.",                                  tags: ['mgr'] },
+    { phrase: "We need to move the needle",             meaning: "Do significantly more with noticeably less.",                                    tags: ['mgr','exec'] },
+    { phrase: "We're resource-constrained right now",   meaning: "You are now doing the work of three people.",                                    tags: ['mgr','exec'] },
+    { phrase: "We're building the plane as we fly it",  meaning: "Total chaos. We're just staying positive about it.",                            tags: ['mgr','exec'] },
+    { phrase: "That's not in scope",                    meaning: "No. And please stop asking.",                                                    tags: ['mgr','pm'] },
+    { phrase: "Let's set up a quick sync",              meaning: "Another meeting that should have been an email.",                                tags: ['mgr','pm'] },
+    { phrase: "It's not rocket science",                meaning: "I'm implying you should have done this already.",                                tags: ['mgr'] },
+    { phrase: "I just want to make sure we're aligned", meaning: "I suspect you're doing the opposite of what I said.",                           tags: ['mgr','pm'] },
+    { phrase: "Let's fail fast",                        meaning: "We're going to fail and I want credit for predicting it.",                       tags: ['mgr','exec'] },
+    // Executive
+    { phrase: "We're pivoting",                         meaning: "Everything we've done for the past year was wrong.",                             tags: ['exec','pm'] },
+    { phrase: "We're doing more with less",             meaning: "The layoffs were approved.",                                                      tags: ['exec','mgr'] },
+    { phrase: "This needs a north star",                meaning: "We have no strategy whatsoever.",                                                tags: ['exec'] },
+    { phrase: "We need to find synergies",              meaning: "We're cutting costs. Someone is getting laid off.",                              tags: ['exec'] },
+    { phrase: "We're being data-driven",                meaning: "My gut feeling didn't match your gut feeling so I need a spreadsheet.",          tags: ['exec','pm'] },
+    { phrase: "We need to democratize this",            meaning: "Make it worse for everyone equally.",                                            tags: ['exec'] },
+    { phrase: "We need executive buy-in",               meaning: "This will die slowly in a committee.",                                           tags: ['exec','pm'] },
+    { phrase: "We need to sunset this",                 meaning: "We're killing your project. Clear your desk.",                                   tags: ['exec'] },
+    { phrase: "We're being very customer-centric",      meaning: "We read a bad review and now everything is on fire.",                            tags: ['exec','pm'] },
+    { phrase: "This is a P0",                           meaning: "Someone above me is yelling at someone above you.",                              tags: ['exec','mgr'] },
+    { phrase: "Let's not boil the ocean",               meaning: "Scale back your ambitions to match my risk tolerance.",                          tags: ['exec','mgr'] },
+    // Engineering
+    { phrase: "We're seeing some technical debt",       meaning: "The codebase is a disaster nobody wants to touch.",                             tags: ['dev'] },
+    { phrase: "We need to scale this",                  meaning: "We didn't think ahead and now it's your problem.",                               tags: ['dev','pm'] },
+    { phrase: "Can you QA this?",                       meaning: "I don't want to test my own feature.",                                           tags: ['dev','pm'] },
+    { phrase: "We should refactor this",                meaning: "We need to rewrite it entirely but nobody wants to say that.",                   tags: ['dev'] },
+    { phrase: "It works on my machine",                 meaning: "It does not work.",                                                              tags: ['dev'] },
+    { phrase: "We need better documentation",           meaning: "Something broke and we need a paper trail to assign blame.",                     tags: ['dev','mgr'] },
+    { phrase: "Can we A/B test this?",                  meaning: "Nobody knows which is better, so we'll pick randomly and call it science.",      tags: ['dev','pm'] },
+    { phrase: "Let's timeblock this",                   meaning: "I'm about to send you a calendar invite you can't decline.",                    tags: ['dev','mgr'] },
+    // HR
+    { phrase: "We have a very flat hierarchy",          meaning: "Nobody knows who makes decisions and everyone is accountable.",                  tags: ['hr'] },
+    { phrase: "We offer competitive compensation",      meaning: "We Googled the median and went slightly below it.",                              tags: ['hr'] },
+    { phrase: "We move fast and break things",          meaning: "We have no QA, no process, and the on-call rotation is a nightmare.",           tags: ['hr','exec'] },
+    { phrase: "We're looking for a culture fit",        meaning: "We want someone exactly like the people already here.",                          tags: ['hr'] },
+    { phrase: "We value work-life balance",             meaning: "We value it so much we listed it in the job posting.",                           tags: ['hr'] },
+    { phrase: "This is a high-visibility role",         meaning: "Everyone will see when you fail.",                                               tags: ['hr','mgr'] },
+    { phrase: "We encourage radical transparency",      meaning: "Management shares everything except salaries and headcount plans.",              tags: ['hr','exec'] },
+    { phrase: "We're investing in your growth",         meaning: "We've assigned you someone else's job without a title change.",                  tags: ['hr','mgr'] },
+    // Scrum / Daily
+    { phrase: "How are we doing team?",                 meaning: "Everyone is struggling but nobody will say it in front of each other.",           tags: ['scrum'] },
+    { phrase: "Any blockers?",                          meaning: "Please don't say yes. I have no idea how to help.",                              tags: ['scrum'] },
+    { phrase: "Let's keep it time-boxed",               meaning: "You've been talking for 90 seconds. Please stop.",                               tags: ['scrum'] },
+    { phrase: "What did you accomplish yesterday?",     meaning: "I'm checking whether you actually worked.",                                      tags: ['scrum'] },
+    { phrase: "Let's take that offline",                meaning: "Stop going into detail. You're ruining my standup.",                             tags: ['scrum','mgr'] },
+    { phrase: "We need to groom the backlog",           meaning: "Let's spend two hours assigning points to things we'll never build.",            tags: ['scrum','pm'] },
+    { phrase: "Is this a 3 or a 5?",                   meaning: "We will argue about this for 20 minutes and then split the difference.",          tags: ['scrum'] },
+    { phrase: "Let's do a spike on this",               meaning: "We have absolutely no idea how to build this.",                                  tags: ['scrum','dev'] },
+    { phrase: "We committed to this in the sprint",     meaning: "You committed. I just put it on the board.",                                     tags: ['scrum','pm'] },
+    { phrase: "We had some spillover",                  meaning: "The sprint failed. We're not calling it that.",                                  tags: ['scrum'] },
+    { phrase: "The velocity is looking great",          meaning: "We all underestimated everything and got lucky.",                                tags: ['scrum','pm'] },
+    { phrase: "Let's add it to the backlog",            meaning: "It will never be prioritized. This is where ideas go to die.",                   tags: ['scrum','pm'] },
+    { phrase: "Can you break this into smaller tickets?", meaning: "This ticket is terrifying and I want to feel less scared.",                    tags: ['scrum','pm'] },
+    { phrase: "The board should reflect reality",       meaning: "Someone has tickets in 'In Progress' from three weeks ago.",                    tags: ['scrum'] },
+    { phrase: "Let's do a retro on that",               meaning: "We'll write problems on sticky notes and do absolutely nothing about them.",     tags: ['scrum'] },
+    { phrase: "Is this a blocker or just a risk?",      meaning: "I can pretend risks don't exist but not blockers.",                              tags: ['scrum','mgr'] },
+    { phrase: "Can you update the ticket?",             meaning: "I check the board instead of talking to you like a human.",                     tags: ['scrum'] },
+    { phrase: "What's the sprint goal again?",          meaning: "We didn't agree on one and now it's day 8.",                                     tags: ['scrum','pm'] },
+    { phrase: "We need to improve our definition of done", meaning: "Things are shipping broken and nobody wants to say it.",                      tags: ['scrum','dev'] },
+    { phrase: "That's a dependency",                    meaning: "This will definitely block us. Nobody will notice until demo day.",              tags: ['scrum','pm'] },
+    { phrase: "Standups are for coordination, not status", meaning: "Please stop giving status updates at the standup.",                           tags: ['scrum'] },
+    { phrase: "Let's inspect and adapt",                meaning: "The plan failed. Let's pretend that was the plan.",                              tags: ['scrum','mgr'] },
+    // Infra / DevOps / CloudOps
+    { phrase: "We just need to containerize it",        meaning: "We're going to spend four months on Kubernetes and ship nothing.",               tags: ['infra','dev'] },
+    { phrase: "We need to move to the cloud",           meaning: "We'll spend three times more but call it scalability.",                          tags: ['infra','exec'] },
+    { phrase: "We're cloud-native",                     meaning: "We run the same app from on-prem but now it costs more.",                        tags: ['infra','exec'] },
+    { phrase: "We're multi-cloud",                      meaning: "We use AWS but someone once bought a GCP subscription.",                         tags: ['infra','exec'] },
+    { phrase: "It works in dev",                        meaning: "Production is a completely different universe and we both know it.",              tags: ['infra','dev'] },
+    { phrase: "The pipeline is broken",                 meaning: "Nobody knows why. Nobody wants to find out.",                                    tags: ['infra','dev'] },
+    { phrase: "It's a configuration issue",             meaning: "We have absolutely no idea what's wrong.",                                       tags: ['infra','dev'] },
+    { phrase: "We need to right-size our instances",    meaning: "The AWS bill arrived and someone made a very concerning face.",                  tags: ['infra','exec'] },
+    { phrase: "We need to improve our observability",   meaning: "Something is on fire and we can't see it.",                                      tags: ['infra','dev'] },
+    { phrase: "We need better monitoring",              meaning: "Something broke and we found out from a customer tweet.",                        tags: ['infra','mgr'] },
+    { phrase: "We need a disaster recovery plan",       meaning: "We need to acknowledge we don't have one.",                                      tags: ['infra','mgr'] },
+    { phrase: "We're serverless",                       meaning: "It's not serverless. Someone else's server is just your problem now.",           tags: ['infra','dev'] },
+    { phrase: "We need to reduce our blast radius",     meaning: "We've broken all of production before and it was really bad.",                   tags: ['infra','dev'] },
+    { phrase: "We need to clean up the AWS account",    meaning: "We have 47 regions with mystery resources nobody remembers creating.",           tags: ['infra'] },
+    { phrase: "We need infrastructure as code",         meaning: "We'll write Terraform for a month and then manually click things in the console anyway.", tags: ['infra','dev'] },
+    { phrase: "We need zero downtime deployments",      meaning: "We're going to have some downtime.",                                             tags: ['infra','dev'] },
+    { phrase: "We need to harden our security posture", meaning: "The pentest report came back and it was not good.",                              tags: ['infra','exec'] },
+    { phrase: "We just need to add a node",             meaning: "We have no idea what the bottleneck is.",                                        tags: ['infra','dev'] },
+    { phrase: "We're working on the on-call rotation",  meaning: "Nobody wants to be on call.",                                                    tags: ['infra','mgr'] },
+    { phrase: "That's an ephemeral issue",              meaning: "It'll break again in an hour.",                                                  tags: ['infra'] },
+    { phrase: "We need to improve our MTTR",            meaning: "Things break often and we're slow to notice.",                                   tags: ['infra','mgr'] },
+    { phrase: "We should use managed services",         meaning: "We're tired of managing things nobody here understands.",                        tags: ['infra','exec'] },
+    // Spreadsheet industrial complex
+    { phrase: "I'll put together a tracker for this",   meaning: "I'm making a spreadsheet to track the spreadsheet we already have.",             tags: ['mgr'] },
+    { phrase: "We need a single source of truth",       meaning: "We have nine spreadsheets that all say different things.",                       tags: ['mgr','pm'] },
+    { phrase: "Can you maintain the master sheet?",     meaning: "You now own a document that 12 people edit and nobody understands.",             tags: ['mgr'] },
+    { phrase: "I'll send you the updated version",      meaning: "Attachment: report_v3_FINAL_revised_actual_FINAL2.xlsx",                        tags: ['mgr','exec'] },
+    { phrase: "Can you add a tab for that?",            meaning: "Our spreadsheet now has 31 tabs and takes 45 seconds to open.",                  tags: ['mgr'] },
+    { phrase: "We need a dashboard for this",           meaning: "A spreadsheet that tracks our other spreadsheets, but with conditional formatting.", tags: ['mgr','exec'] },
+];
+
+const INTROS = [
+    '"we need to be more intentional about this"',
+    '"let\'s circle back on that"',
+    '"can you add some color to that?"',
+    '"we need to move the needle"',
+    '"let\'s make sure we\'re aligned"',
+    '"we should socialize this idea"',
+    '"i just want to double-click on that"',
+    '"we\'re being very data-driven here"',
+    '"how are we doing team?"',
+    '"any blockers?"',
+    '"let\'s keep it time-boxed"',
+    '"we had some spillover from last sprint"',
+    '"can we do a quick retro on that?"',
+    '"is this a 3 or a 5?"',
+];
+document.getElementById('intro-quote').textContent =
+    INTROS[Math.floor(Math.random() * INTROS.length)];
+
+// ── State ──────────────────────────────────────────────────────────────────────
+let activeFilter = 'all';
+let searchQuery  = '';
+
+// ── Highlight helper ───────────────────────────────────────────────────────────
+function hl(text, q) {
+    const safe = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    if (!q) return safe;
+    const idx = safe.toLowerCase().indexOf(q.toLowerCase());
+    if (idx < 0) return safe;
+    return safe.slice(0, idx) + '<mark>' + safe.slice(idx, idx + q.length) + '</mark>' + safe.slice(idx + q.length);
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────────
+function render() {
+    const q = searchQuery.toLowerCase().trim();
+    const list = document.getElementById('phrase-list');
+    const countEl = document.getElementById('phrase-count');
+
+    const filtered = PHRASES.filter(p => {
+        const catMatch = activeFilter === 'all' || p.tags.includes(activeFilter);
+        const textMatch = !q || p.phrase.toLowerCase().includes(q) || p.meaning.toLowerCase().includes(q);
+        return catMatch && textMatch;
+    });
+
+    countEl.textContent = filtered.length === PHRASES.length
+        ? `${PHRASES.length} phrases`
+        : `${filtered.length} of ${PHRASES.length} phrases`;
+
+    if (filtered.length === 0) {
+        list.innerHTML = '<div class="no-results">No phrases match your search.</div>';
+        return;
+    }
+
+    list.innerHTML = filtered.map(p => {
+        const tags = p.tags.map(t => {
+            const labels = { pm: 'PM', mgr: 'Manager', exec: 'Executive', dev: 'Engineering', hr: 'HR', scrum: 'Scrum', infra: 'Infra' };
+            return `<span class="tag tag-${t}">${labels[t]}</span>`;
+        }).join('');
+        return `<div class="phrase-card">
+            <div class="phrase-text">${hl(p.phrase, searchQuery)}</div>
+            <div class="phrase-tags">${tags}</div>
+            <div class="phrase-meaning">${hl(p.meaning, searchQuery)}</div>
+        </div>`;
+    }).join('');
+}
+
+// ── Search ─────────────────────────────────────────────────────────────────────
+document.getElementById('search-input').addEventListener('input', e => {
+    searchQuery = e.target.value;
+    render();
+});
+
+// ── Filter pills ───────────────────────────────────────────────────────────────
+document.querySelectorAll('.pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+        activeFilter = pill.dataset.cat;
+        document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        render();
+    });
+});
+
+// ── Mobile nav ─────────────────────────────────────────────────────────────────
+const navToggle = document.getElementById('nav-toggle');
+const mainNav   = document.getElementById('main-nav');
+navToggle.addEventListener('click', e => {
+    e.stopPropagation();
+    const open = mainNav.classList.toggle('open');
+    navToggle.setAttribute('aria-expanded', open);
+});
+document.addEventListener('click', e => {
+    if (!navToggle.contains(e.target) && !mainNav.contains(e.target)) {
+        mainNav.classList.remove('open');
+        navToggle.setAttribute('aria-expanded', 'false');
+    }
+});
+mainNav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+    mainNav.classList.remove('open');
+    navToggle.setAttribute('aria-expanded', 'false');
+}));
+
+// ── Init ───────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
