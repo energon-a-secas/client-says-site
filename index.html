@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Says</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <style>
+        /* ── Reset & base ─────────────────────────────────────────────────── */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Avenir Next', -apple-system, BlinkMacSystemFont,
+                         'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #040714;
+            min-height: 100vh;
+            color: #f9f9f9;
+            display: flex; flex-direction: column;
+        }
+        .container { flex: 1; width: 100%; }
+
+        /* ── Header ───────────────────────────────────────────────────────── */
+        .header-bar {
+            background: linear-gradient(135deg, #B015B0 0%, #3D0080 45%, #080010 100%);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+            padding: 0 24px;
+            height: 68px;
+            position: sticky;
+            top: 0;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+        }
+        .header-logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+        .header-logo-img { height: 36px; width: auto; flex-shrink: 0; filter: brightness(0) invert(1); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); display: block; }
+        .header-logo-img:hover { transform: scale(1.14) rotate(-9deg); }
+        .header-logo h1 { font-size: 1.2em; font-weight: 600; color: #f9f9f9; letter-spacing: .5px; }
+        .header-subtitle { font-size: .82em; color: rgba(255,255,255,0.72); font-weight: 500; margin-top: 3px; }
+
+        nav { display: flex; gap: 5px; margin-left: auto; }
+        nav a {
+            color: #f0f0f0; text-decoration: none; padding: 7px 15px;
+            border-radius: 5px; transition: all .2s; font-size: .92em; font-weight: 500;
+        }
+        nav a:hover  { background: rgba(233, 30, 120, 0.14); }
+        nav a.active { background: rgba(233, 30, 120, 0.28); }
+
+        /* ── Hamburger toggle ─────────────────────────────────────────────── */
+        .nav-toggle {
+            display: none;
+            background: none; border: none;
+            color: rgba(255,255,255,.65); cursor: pointer;
+            padding: 6px; border-radius: 5px; margin-left: 10px;
+            transition: background .2s, color .2s;
+            align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .nav-toggle:hover          { background: rgba(255,255,255,.1); color: #fff; }
+        .nav-toggle[aria-expanded="true"] { background: rgba(255,255,255,.1); color: #fff; }
+        .header-home {
+            display: flex; align-items: center; margin-left: 5px; padding: 5px;
+            color: rgba(255,255,255,0.9); text-decoration: none; border-radius: 6px;
+            transition: color .2s, background .2s; flex-shrink: 0;
+        }
+        .header-home:hover { color: #fff; background: rgba(255,255,255,0.12); }
+        .header-home svg { width: 34px; height: 34px; display: block; }
+
+        /* ── Layout ───────────────────────────────────────────────────────── */
+        .container { max-width: 900px; margin: 0 auto; padding: 30px; }
+
+        .card {
+            background: rgba(255,255,255,.03);
+            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 15px; padding: 30px; margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        /* Lift input card above result cards so the dropdown isn't clipped by
+           later stacking contexts created by backdrop-filter / transforms */
+        #card-input { position: relative; z-index: 10; }
+
+        /* ── "Client says" header ─────────────────────────────────────────── */
+        .cs-header  { margin-bottom: 28px; line-height: 1.2; text-align: center; }
+        .cs-label   { display: block; font-size: 0.8em; font-weight: 500; color: rgba(255,255,255,.4); letter-spacing: .5px; text-transform: uppercase; margin-bottom: 8px; }
+        .cs-quote   { font-size: 1.75em; color: rgba(255,255,255,.88); font-style: italic; font-weight: 600; letter-spacing: -.3px; }
+
+        /* ── Input area — stacked and centred ────────────────────────────── */
+        .sentence-row {
+            display: flex; flex-direction: column;
+            align-items: center; gap: 14px;
+        }
+        /* Hour : Minute AM/PM on one row */
+        .time-group {
+            display: flex; align-items: center; gap: 10px;
+        }
+        .time-colon { font-size: 1.5em; font-weight: 700; color: rgba(255,255,255,.3); margin: 0 -2px; }
+
+        /* ── Hour stepper arrows ──────────────────────────────────────────── */
+        .step-btn {
+            background: none; border: none; cursor: pointer; padding: 8px 5px;
+            color: rgba(255,255,255,.28); display: flex; align-items: center;
+            transition: color .15s, transform .1s; border-radius: 6px;
+        }
+        .step-btn:hover  { color: #4b8eff; }
+        .step-btn:active { transform: scale(.85); }
+
+        /* ── Writable time inputs ─────────────────────────────────────────── */
+        .time-input {
+            background: rgba(255,255,255,.05);
+            border: 1.5px solid rgba(255,255,255,.15);
+            border-radius: 10px; color: #f9f9f9;
+            padding: 10px 6px; font-size: 1.3em;
+            font-family: inherit; font-weight: 700;
+            text-align: center; width: 62px; outline: none;
+            caret-color: #0063e5;
+            transition: border-color .2s, background .2s, box-shadow .2s;
+        }
+        .time-input:hover   { border-color: rgba(0,99,229,.6); background: rgba(0,99,229,.07); }
+        .time-input:focus   { border-color: #0063e5; background: rgba(0,99,229,.1); box-shadow: 0 0 0 3px rgba(0,99,229,.2); }
+        .time-input.invalid { border-color: rgba(255,80,80,.55); box-shadow: 0 0 0 3px rgba(255,80,80,.15); }
+
+        /* ── AM/PM toggle ─────────────────────────────────────────────────── */
+        .ampm-toggle {
+            background: rgba(255,255,255,.05);
+            border: 1.5px solid rgba(255,255,255,.15);
+            border-radius: 10px; color: #f9f9f9;
+            padding: 10px 14px; font-size: 1.1em;
+            font-family: inherit; font-weight: 700;
+            cursor: pointer; outline: none; min-width: 70px;
+            transition: all .2s; user-select: none;
+        }
+        .ampm-toggle:hover  { border-color: rgba(0,99,229,.6); background: rgba(0,99,229,.1); }
+        .ampm-toggle:focus  { border-color: #0063e5; box-shadow: 0 0 0 3px rgba(0,99,229,.2); }
+        .ampm-toggle:active { transform: scale(.97); }
+
+        /* ── TZ Combobox ──────────────────────────────────────────────────── */
+        .tz-combobox { position: relative; display: inline-block; width: auto; max-width: min(360px, 100%); }
+        .tz-combobox.open { width: min(360px, 100%); }
+        .tz-combobox.open .tz-input { width: 100%; }
+
+        .tz-combobox-inner { position: relative; }
+        .tz-combobox-inner::after {
+            content: ''; position: absolute; right: 11px; top: 50%;
+            transform: translateY(-50%);
+            border-left: 4px solid transparent; border-right: 4px solid transparent;
+            border-top: 5px solid #0063e5; pointer-events: none;
+            transition: transform .2s;
+        }
+        .tz-combobox.open .tz-combobox-inner::after {
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        /* Hidden span used to measure abbreviation width for input auto-sizing */
+        #tz-sizer {
+            position: absolute; visibility: hidden; white-space: pre; pointer-events: none;
+            font-family: inherit; font-size: .93em; font-weight: 500; padding: 0;
+        }
+
+        .tz-input {
+            min-width: 60px;
+            background: rgba(255,255,255,.05);
+            border: 1.5px solid rgba(255,255,255,.15);
+            border-radius: 10px; color: #f9f9f9;
+            padding: 11px 36px 11px 14px;
+            font-size: .93em; font-family: inherit; font-weight: 500;
+            cursor: pointer; outline: none;
+            transition: border-color .2s, background .2s, box-shadow .2s;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .tz-input::placeholder { color: #555; }
+        .tz-input:hover { border-color: rgba(0,99,229,.6); background: rgba(0,99,229,.07); }
+        .tz-input:focus {
+            border-color: #0063e5; background: rgba(0,99,229,.1);
+            box-shadow: 0 0 0 3px rgba(0,99,229,.2); cursor: text;
+        }
+
+        /* Dropdown list */
+        .tz-dropdown {
+            position: absolute; top: calc(100% + 6px); left: 0;
+            width: max(100%, 370px);
+            background: #0d1225;
+            border: 1.5px solid rgba(0,99,229,.5);
+            border-radius: 12px; max-height: 280px; overflow-y: auto;
+            z-index: 1000; display: none;
+            box-shadow: 0 12px 40px rgba(0,0,0,.65);
+            scrollbar-width: thin; scrollbar-color: #0063e5 rgba(255,255,255,.04);
+        }
+        .tz-dropdown::-webkit-scrollbar       { width: 5px; }
+        .tz-dropdown::-webkit-scrollbar-track { background: rgba(255,255,255,.03); border-radius: 3px; }
+        .tz-dropdown::-webkit-scrollbar-thumb { background: #0063e5; border-radius: 3px; }
+
+        .tz-group-header {
+            padding: 10px 14px 4px; font-size: .69em; text-transform: uppercase;
+            letter-spacing: 1.5px; color: #555; font-weight: 700;
+            border-top: 1px solid rgba(255,255,255,.05);
+            position: sticky; top: 0; background: #0d1225; z-index: 1;
+        }
+        .tz-group-header:first-child { border-top: none; }
+
+        .tz-option {
+            padding: 9px 14px; cursor: pointer;
+            display: flex; align-items: baseline; gap: 10px;
+            transition: background .1s;
+        }
+        .tz-option:hover,
+        .tz-option.active        { background: rgba(0,99,229,.18); }
+        .tz-option.is-selected   { background: rgba(0,99,229,.12); }
+        .tz-option.active.is-selected { background: rgba(0,99,229,.28); }
+
+        .tz-abbr {
+            font-size: .8em; font-weight: 700; color: #4b8eff;
+            min-width: 42px; letter-spacing: .5px; flex-shrink: 0;
+        }
+        .tz-label { font-size: .83em; color: #cacaca; line-height: 1.4; flex: 1; }
+        .tz-label mark, .tz-abbr mark {
+            background: rgba(0,99,229,.45); color: #fff;
+            border-radius: 2px; padding: 0 1px;
+        }
+        .tz-no-results { padding: 20px; text-align: center; color: #555; font-size: .9em; }
+
+        /* ── Row below sentence ───────────────────────────────────────────── */
+        .sentence-meta {
+            margin-top: 14px; display: flex; flex-direction: column;
+            align-items: center; gap: 6px;
+        }
+        .saved-indicator {
+            font-size: .78em; color: #4b8eff; opacity: 0; transition: opacity .35s;
+            display: flex; align-items: center; gap: 5px; pointer-events: none;
+        }
+        .saved-indicator.show { opacity: 1; }
+
+        /* ── Now button — corner of input card ───────────────────────────── */
+        .now-btn {
+            position: absolute; top: 14px; right: 16px;
+            background: none; border: none;
+            color: rgba(255,255,255,.22); font-size: .78em;
+            font-family: inherit; cursor: pointer;
+            display: flex; align-items: center; gap: 4px;
+            padding: 4px 6px; border-radius: 5px; transition: color .25s;
+        }
+        .now-btn:hover  { color: rgba(255,255,255,.55); }
+        .now-btn:active { color: rgba(255,255,255,.8); }
+        @keyframes firePop {
+            0%   { transform: scale(.5) translateY(3px); opacity: 0; }
+            55%  { transform: scale(1.5) translateY(-2px); opacity: 1; }
+            100% { transform: scale(1.1) translateY(0);   opacity: 1; }
+        }
+        .now-btn.fired { font-size: 1.1em; animation: firePop .4s cubic-bezier(.34,1.56,.64,1) forwards; }
+
+        /* ── Result cards ─────────────────────────────────────────────────── */
+        .results-grid {
+            display: grid; grid-template-columns: repeat(3,1fr);
+            gap: 15px; margin-bottom: 20px;
+        }
+        .result-card {
+            color: #fff; padding: 28px 18px 24px; border-radius: 15px;
+            text-align: center; border: 1px solid rgba(255,255,255,.1);
+            transition: transform .2s ease, box-shadow .2s ease;
+            position: relative; overflow: hidden;
+        }
+        .result-card::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 50% -20%, rgba(255,255,255,.08) 0%, transparent 65%);
+            pointer-events: none;
+        }
+        .result-card:hover { transform: translateY(-4px); }
+
+        #card-chile    { background: linear-gradient(140deg,#0052d6 0%,#0075ff 100%); box-shadow: 0 8px 32px rgba(0,82,214,.35); }
+        #card-chile:hover    { box-shadow: 0 14px 44px rgba(0,82,214,.52); }
+        #card-colombia { background: linear-gradient(140deg,#0063e5 0%,#0080ff 100%); box-shadow: 0 8px 32px rgba(0,99,229,.35); }
+        #card-colombia:hover { box-shadow: 0 14px 44px rgba(0,99,229,.52); }
+        #card-mexico   { background: linear-gradient(140deg,#0047ab 0%,#0068cc 100%); box-shadow: 0 8px 32px rgba(0,71,171,.35); }
+        #card-mexico:hover   { box-shadow: 0 14px 44px rgba(0,71,171,.52); }
+
+        .result-flag    { font-size: 2.4em; margin-bottom: 6px; line-height: 1; }
+        .result-country { font-size: .82em; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; opacity: .85; margin-bottom: 2px; }
+        .result-city    { font-size: .71em; opacity: .5; margin-bottom: 18px; font-style: italic; }
+        .result-time    {
+            font-size: 2.5em; font-weight: 700; letter-spacing: -1px; line-height: 1;
+            text-shadow: 0 2px 16px rgba(0,0,0,.3); min-height: 1.2em;
+        }
+        .result-ampm    { font-size: .42em; font-weight: 600; opacity: .8; vertical-align: super; letter-spacing: .5px; margin-left: 2px; }
+
+        .day-badge { display: inline-block; padding: 4px 13px; border-radius: 20px; font-size: .75em; font-weight: 600; margin-top: 12px; }
+        .day-same  { background: rgba(255,255,255,.15); }
+        .day-next  { background: rgba(255,210,0,.25);   color: #ffd700; }
+        .day-prev  { background: rgba(255,120,120,.25); color: #ff9b9b; }
+
+        /* Copy button (top-right of each card) */
+        .copy-btn {
+            position: absolute; top: 10px; right: 10px;
+            background: rgba(255,255,255,.12); border: none; border-radius: 7px;
+            color: rgba(255,255,255,.75); cursor: pointer; padding: 6px;
+            display: flex; align-items: center; transition: all .2s; z-index: 1;
+        }
+        .copy-btn:hover  { background: rgba(255,255,255,.25); color: #fff; }
+        .copy-btn.copied { background: rgba(100,255,150,.25); color: #7dffb3; }
+
+        @keyframes popIn {
+            from { opacity: .5; transform: scale(.93) translateY(3px); }
+            to   { opacity: 1;  transform: scale(1)   translateY(0);   }
+        }
+        .pop { animation: popIn .28s cubic-bezier(.34,1.56,.64,1); }
+
+        /* ── Actions bar ──────────────────────────────────────────────────── */
+        .actions-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 10px; margin-bottom: 20px;
+        }
+        .share-btn {
+            background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.15);
+            border-radius: 8px; color: #cacaca; padding: 9px 16px; font-size: .88em;
+            font-family: inherit; cursor: pointer;
+            display: flex; align-items: center; gap: 7px; transition: all .2s;
+        }
+        .share-btn:hover  { background: rgba(0,99,229,.12); border-color: rgba(0,99,229,.5); color: #f9f9f9; }
+        .share-btn.copied { border-color: rgba(100,255,150,.4); color: #7dffb3; }
+
+        .toggle-group  { display: flex; gap: 4px; }
+        .toggle-btn {
+            background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.15);
+            border-radius: 7px; color: #888; padding: 8px 16px; font-size: .88em;
+            font-family: inherit; cursor: pointer; transition: all .2s; font-weight: 500;
+        }
+        .toggle-btn:hover  { color: #f9f9f9; }
+        .toggle-btn.active { background: #0063e5; border-color: #0063e5; color: #fff; box-shadow: 0 4px 16px rgba(0,99,229,.4); }
+
+        /* ── Footer ───────────────────────────────────────────────────────── */
+        .info-footer {
+            text-align: center; padding: 20px 24px 28px;
+            color: rgba(255,255,255,.22); font-size: .78em; line-height: 1.8;
+            border-top: 1px solid rgba(255,255,255,.05);
+            margin-top: 48px;
+        }
+
+        /* ── Responsive ───────────────────────────────────────────────────── */
+        @media (max-width: 680px) {
+            .results-grid   { grid-template-columns: 1fr; }
+            .sentence-row   { font-size: 1em; }
+            .tz-combobox    { width: 100%; max-width: 320px; }
+            .tz-dropdown    { width: 100%; min-width: 100%; }
+            .container      { padding: 20px; }
+            .header-bar     { padding: 0 16px; }
+        }
+        @media (max-width: 540px) {
+            .nav-toggle { display: flex; }
+            /* Hide nav by default; shown when .open is toggled */
+            nav {
+                display: none;
+                width: 100%;
+                order: 10;
+                margin-left: 0;
+                flex-direction: column;
+                gap: 2px;
+                padding: 6px 0 10px;
+                border-top: 1px solid rgba(255,255,255,.07);
+            }
+            nav.open { display: flex; }
+            nav a    { padding: 10px 6px; font-size: .95em; }
+            .header-bar { flex-wrap: wrap; }
+            .header-logo { flex: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────────────────────── -->
+<div class="header-bar">
+    <div class="header-logo">
+        <a href="https://ehq.cl/" target="_blank" rel="noopener"><img src="energon-classic-logo.png" class="header-logo-img" alt="Neorgon"></a>
+        <div>
+            <h1>Client Says</h1>
+            <div class="header-subtitle">Timezone Converter for Remote Teams</div>
+        </div>
+        <!-- Hamburger — visible only on small screens -->
+        <button class="nav-toggle" id="nav-toggle" aria-label="Menu" aria-expanded="false">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="6"  x2="21" y2="6"/>
+                <line x1="3" y1="12" x2="21" y2="12"/>
+                <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+        </button>
+    </div>
+    <nav id="main-nav">
+        <a href="index.html" class="active">Timezone</a>
+        <a href="jargon.html">Decoded</a>
+    </nav>
+    <a href="https://ehq.cl/" class="header-home" title="ehq.cl" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    </a>
+</div>
+
+<!-- ── Main ────────────────────────────────────────────────────────────────── -->
+<div class="container">
+
+    <div class="card" id="card-input">
+
+        <!-- Big header: "Client says" + randomised phrase -->
+        <div class="cs-header">
+            <span class="cs-label">Client says</span>
+            <span class="cs-quote" id="client-quote">"the meeting will be at"</span>
+        </div>
+
+        <div class="sentence-row">
+            <!-- Row 1: hour : minute AM/PM -->
+            <div class="time-group">
+                <button type="button" class="step-btn" id="btn-hour-down" aria-label="Decrease hour">
+                    <svg width="9" height="14" viewBox="0 0 9 14" fill="currentColor"><polygon points="8,0 8,14 0,7"/></svg>
+                </button>
+                <input type="text" id="inp-hour" class="time-input"
+                       maxlength="2" inputmode="numeric"
+                       placeholder="12" aria-label="Hour">
+                <span class="time-colon">:</span>
+                <input type="text" id="inp-min" class="time-input"
+                       maxlength="2" inputmode="numeric"
+                       placeholder="00" aria-label="Minute">
+                <button type="button" id="inp-ampm" class="ampm-toggle"
+                        aria-label="Toggle AM or PM">PM</button>
+                <button type="button" class="step-btn" id="btn-hour-up" aria-label="Increase hour">
+                    <svg width="9" height="14" viewBox="0 0 9 14" fill="currentColor"><polygon points="1,0 1,14 9,7"/></svg>
+                </button>
+            </div>
+
+            <!-- Row 2: timezone -->
+            <div class="tz-combobox" id="tz-combobox"
+                 role="combobox" aria-haspopup="listbox" aria-expanded="false">
+                <div class="tz-combobox-inner">
+                    <input class="tz-input" id="tz-input" type="text"
+                           autocomplete="off" spellcheck="false"
+                           aria-label="Timezone — type to search"
+                           placeholder="Search timezone…">
+                    <span id="tz-sizer" aria-hidden="true"></span>
+                </div>
+                <div class="tz-dropdown" id="tz-dropdown" role="listbox"></div>
+            </div>
+        </div>
+
+        <button class="now-btn" id="btn-now" title="Set to current local time">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            now
+        </button>
+        <div class="sentence-meta">
+            <div class="saved-indicator" id="saved-indicator">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="3"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Settings remembered
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Result cards ─────────────────────────────────────────────────── -->
+    <div class="results-grid">
+
+        <div class="result-card" id="card-chile">
+            <button class="copy-btn" data-target="chile" title="Copy time">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+            </button>
+            <div class="result-flag">🇨🇱</div>
+            <div class="result-country">Chile</div>
+            <div class="result-city">America / Santiago</div>
+            <div class="result-time" id="time-chile">—</div>
+            <div><span class="day-badge day-same" id="day-chile"> </span></div>
+        </div>
+
+        <div class="result-card" id="card-colombia">
+            <button class="copy-btn" data-target="colombia" title="Copy time">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+            </button>
+            <div class="result-flag">🇨🇴</div>
+            <div class="result-country">Colombia</div>
+            <div class="result-city">America / Bogota</div>
+            <div class="result-time" id="time-colombia">—</div>
+            <div><span class="day-badge day-same" id="day-colombia"> </span></div>
+        </div>
+
+        <div class="result-card" id="card-mexico">
+            <button class="copy-btn" data-target="mexico" title="Copy time">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+            </button>
+            <div class="result-flag">🇲🇽</div>
+            <div class="result-country">Mexico</div>
+            <div class="result-city">America / Mexico_City</div>
+            <div class="result-time" id="time-mexico">—</div>
+            <div><span class="day-badge day-same" id="day-mexico"> </span></div>
+        </div>
+
+    </div>
+
+    <!-- ── Actions bar ──────────────────────────────────────────────────── -->
+    <div class="actions-bar">
+        <button class="share-btn" id="btn-share">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="18" cy="5" r="3"/>
+                <circle cx="6" cy="12" r="3"/>
+                <circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                <line x1="15.41" y1="6.51"  x2="8.59"  y2="10.49"/>
+            </svg>
+            Copy share link
+        </button>
+
+        <div class="toggle-group" role="group" aria-label="Time format">
+            <button class="toggle-btn active" id="btn-12h" data-fmt="12">12h</button>
+            <button class="toggle-btn"        id="btn-24h" data-fmt="24">24h</button>
+        </div>
+    </div>
+
+
+</div><!-- /container -->
+
+<footer class="info-footer">
+    Powered by the IANA Timezone Database · Times auto-adjust for Daylight Saving Time<br>
+    Share links carry the exact time &amp; timezone · Settings are remembered in your browser
+</footer>
+
+<script>
+'use strict';
+
+// ── DOM refs ──────────────────────────────────────────────────────────────────
+const inpHour     = document.getElementById('inp-hour');
+const inpMin      = document.getElementById('inp-min');
+const btnAmpm     = document.getElementById('inp-ampm');
+const savedInd    = document.getElementById('saved-indicator');
+const btnNow      = document.getElementById('btn-now');
+const btnShare    = document.getElementById('btn-share');
+const btn12h      = document.getElementById('btn-12h');
+const btn24h      = document.getElementById('btn-24h');
+
+// ── Mutable state ─────────────────────────────────────────────────────────────
+let use24h     = false;
+let selectedTZ = 'America/New_York';
+let savedTimer = null;
+
+// ── Randomised quote ──────────────────────────────────────────────────────────
+const QUOTES = [
+    'the meeting will be at',
+    "let's schedule it for",
+    'the call is at',
+    'can we do',
+    'they want to connect at',
+    'the sync starts at',
+    "they said",
+    'the standup is at',
+    'the deadline is at',
+    "let's hop on at",
+    'the interview is at',
+    'the demo is scheduled for',
+    "they mentioned",
+    'the kickoff is at',
+];
+document.getElementById('client-quote').textContent =
+    '\u201c' + QUOTES[Math.floor(Math.random() * QUOTES.length)] + '\u201d';
+
+// ── Timezone list ─────────────────────────────────────────────────────────────
+const TZ_GROUPS = [
+    { label: 'UTC / GMT', zones: [
+        ['UTC', 'UTC – Coordinated Universal Time'],
+    ]},
+    { label: 'United States & Canada', zones: [
+        ['America/New_York',    'Eastern Time – New York, Miami, Toronto'],
+        ['America/Chicago',     'Central Time – Chicago, Houston, Dallas'],
+        ['America/Denver',      'Mountain Time – Denver, Calgary'],
+        ['America/Los_Angeles', 'Pacific Time – Los Angeles, Vancouver'],
+        ['America/Phoenix',     'Arizona – Phoenix (no DST)'],
+        ['America/Anchorage',   'Alaska – Anchorage'],
+        ['Pacific/Honolulu',    'Hawaii – Honolulu (no DST)'],
+    ]},
+    { label: 'Latin America', zones: [
+        ['America/Argentina/Buenos_Aires', 'Argentina – Buenos Aires'],
+        ['America/Sao_Paulo',   'Brazil – São Paulo'],
+        ['America/Santiago',    'Chile – Santiago'],
+        ['America/Bogota',      'Colombia – Bogotá'],
+        ['America/Lima',        'Peru / Ecuador – Lima'],
+        ['America/Caracas',     'Venezuela – Caracas'],
+        ['America/Mexico_City', 'Mexico – Mexico City, CDMX'],
+        ['America/Monterrey',   'Mexico – Monterrey'],
+        ['America/Tijuana',     'Mexico – Tijuana (Pacific)'],
+    ]},
+    { label: 'Europe', zones: [
+        ['Europe/London',    'United Kingdom – London'],
+        ['Europe/Lisbon',    'Portugal – Lisbon'],
+        ['Europe/Paris',     'France – Paris'],
+        ['Europe/Madrid',    'Spain – Madrid'],
+        ['Europe/Berlin',    'Germany – Berlin'],
+        ['Europe/Amsterdam', 'Netherlands – Amsterdam'],
+        ['Europe/Moscow',    'Russia – Moscow'],
+    ]},
+    { label: 'Asia & Pacific', zones: [
+        ['Asia/Dubai',       'UAE – Dubai (UTC+4)'],
+        ['Asia/Kolkata',     'India – Mumbai (UTC+5:30)'],
+        ['Asia/Singapore',   'Singapore (UTC+8)'],
+        ['Asia/Tokyo',       'Japan – Tokyo (UTC+9)'],
+        ['Australia/Sydney', 'Australia – Sydney'],
+        ['Pacific/Auckland', 'New Zealand – Auckland'],
+    ]},
+];
+
+// Compute current abbreviation for a TZ (e.g. "EST", "CLST")
+function getTZAbbr(tz) {
+    try {
+        return new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'short' })
+            .formatToParts(new Date())
+            .find(p => p.type === 'timeZoneName')?.value ?? '';
+    } catch { return ''; }
+}
+
+// Common informal aliases — covers short forms clients actually say
+// (ET/CT/PT, seasonal pairs like EST/EDT, regional nicknames, etc.)
+const TZ_ALIASES = {
+    'America/New_York':               'et est edt eastern east coast ny nyc',
+    'America/Chicago':                'ct cst cdt central midwest chicago',
+    'America/Denver':                 'mt mst mdt mountain denver',
+    'America/Los_Angeles':            'pt pst pdt pacific west coast la los angeles',
+    'America/Phoenix':                'mst arizona az phoenix no dst',
+    'America/Anchorage':              'akst akdt alaska ak',
+    'Pacific/Honolulu':               'hst hawaii hi',
+    'America/Toronto':                'et est edt eastern canada toronto',
+    'America/Vancouver':              'pt pst pdt pacific canada vancouver',
+    'America/Santiago':               'clt clst chile',
+    'America/Bogota':                 'cot colombia bogota',
+    'America/Lima':                   'pet peru ecuador lima',
+    'America/Caracas':                'vet venezuela',
+    'America/Mexico_City':            'cst cdt mx mexico cdmx',
+    'America/Monterrey':              'cst cdt mx mexico monterrey',
+    'America/Tijuana':                'pst pdt mx mexico tijuana baja',
+    'America/Sao_Paulo':              'brt brst brazil brasil sao paulo',
+    'America/Argentina/Buenos_Aires': 'art argentina bsas ba',
+    'UTC':                            'utc gmt universal zulu z',
+    'Europe/London':                  'gmt bst uk gb england britain london',
+    'Europe/Lisbon':                  'wet west portugal lisbon',
+    'Europe/Paris':                   'cet cest france paris',
+    'Europe/Madrid':                  'cet cest spain madrid',
+    'Europe/Berlin':                  'cet cest germany berlin',
+    'Europe/Amsterdam':               'cet cest netherlands amsterdam holland',
+    'Europe/Moscow':                  'msk russia moscow',
+    'Asia/Dubai':                     'gst gulf uae dubai',
+    'Asia/Kolkata':                   'ist india mumbai delhi',
+    'Asia/Singapore':                 'sgt singapore',
+    'Asia/Tokyo':                     'jst japan tokyo',
+    'Australia/Sydney':               'aest aedt australia sydney aus',
+    'Pacific/Auckland':               'nzst nzdt nz new zealand auckland',
+};
+
+// Flat list with pre-computed abbreviations and search string
+const TZ_FLAT = TZ_GROUPS.flatMap(g =>
+    g.zones.map(([id, label]) => {
+        const abbr    = getTZAbbr(id);
+        const aliases = TZ_ALIASES[id] ?? '';
+        return { id, label, abbr, group: g.label,
+                 search: `${id} ${label} ${abbr} ${aliases}`.toLowerCase() };
+    })
+);
+
+// ── Combobox ──────────────────────────────────────────────────────────────────
+const tzCombobox = document.getElementById('tz-combobox');
+const tzInput    = document.getElementById('tz-input');
+const tzDropdown = document.getElementById('tz-dropdown');
+const tzSizer    = document.getElementById('tz-sizer');
+
+// Size the input to its displayed text (abbreviation when closed, query when typing)
+function sizeTzInput() {
+    tzSizer.textContent = tzInput.value || tzInput.placeholder;
+    // left-pad(14) + right-pad(36 for arrow) + borders(3) + buffer(5) = 58
+    tzInput.style.width = Math.max(70, tzSizer.scrollWidth + 58) + 'px';
+}
+
+let cbOpen     = false;
+let cbActive   = -1;
+let cbFiltered = TZ_FLAT;
+let cbQuery    = '';
+
+function cbFindOpt(id) { return TZ_FLAT.find(o => o.id === id); }
+
+function cbDisplayText(id) {
+    const o = cbFindOpt(id);
+    return o ? o.abbr : id;
+}
+
+// HTML-escape + highlight matched query
+function hl(text, q) {
+    const safe = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    if (!q) return safe;
+    const idx = safe.toLowerCase().indexOf(q.toLowerCase());
+    if (idx < 0) return safe;
+    return safe.slice(0, idx)
+        + '<mark>' + safe.slice(idx, idx + q.length) + '</mark>'
+        + safe.slice(idx + q.length);
+}
+
+function cbRender() {
+    tzDropdown.innerHTML = '';
+    if (cbFiltered.length === 0) {
+        tzDropdown.innerHTML = '<div class="tz-no-results">No timezones match "' + cbQuery + '"</div>';
+        return;
+    }
+    let lastGroup = null;
+    cbFiltered.forEach((opt, i) => {
+        if (opt.group !== lastGroup) {
+            lastGroup = opt.group;
+            const hdr = document.createElement('div');
+            hdr.className = 'tz-group-header';
+            hdr.textContent = opt.group;
+            tzDropdown.appendChild(hdr);
+        }
+        const el = document.createElement('div');
+        el.className = 'tz-option'
+            + (i === cbActive   ? ' active'      : '')
+            + (opt.id === selectedTZ ? ' is-selected' : '');
+        el.setAttribute('role', 'option');
+        el.setAttribute('aria-selected', opt.id === selectedTZ);
+        el.innerHTML = `<span class="tz-abbr">${hl(opt.abbr, cbQuery)}</span>`
+                     + `<span class="tz-label">${hl(opt.label, cbQuery)}</span>`;
+        el.addEventListener('mousedown', e => { e.preventDefault(); cbSelect(opt.id); });
+        el.addEventListener('mousemove', () => { cbActive = i; cbMarkActive(); });
+        tzDropdown.appendChild(el);
+    });
+}
+
+function cbMarkActive() {
+    tzDropdown.querySelectorAll('.tz-option')
+        .forEach((el, i) => el.classList.toggle('active', i === cbActive));
+}
+function cbScrollActive() {
+    tzDropdown.querySelectorAll('.tz-option')[cbActive]?.scrollIntoView({ block: 'nearest' });
+}
+
+function cbOpen_() {
+    if (cbOpen) return;
+    cbOpen = true;
+    tzInput.style.width = ''; // CSS .open takes over
+    cbFiltered = TZ_FLAT;
+    cbActive = -1;
+    cbQuery = '';
+    cbRender();
+    tzDropdown.style.display = 'block';
+    tzCombobox.setAttribute('aria-expanded', 'true');
+    tzCombobox.classList.add('open');
+    // Scroll current selection into view
+    const idx = cbFiltered.findIndex(o => o.id === selectedTZ);
+    if (idx >= 0) { cbActive = idx; setTimeout(() => cbScrollActive(), 0); }
+}
+
+function cbClose(restoreVal = true) {
+    if (!cbOpen) return;
+    cbOpen = false;
+    tzDropdown.style.display = 'none';
+    tzCombobox.setAttribute('aria-expanded', 'false');
+    tzCombobox.classList.remove('open');
+    if (restoreVal) tzInput.value = cbDisplayText(selectedTZ);
+    sizeTzInput();
+}
+
+function cbSelect(id) {
+    selectedTZ = id;
+    tzInput.value = cbDisplayText(id);
+    cbClose(false);
+    convert();
+    saveDefaults();
+}
+
+// ── Combobox events ───────────────────────────────────────────────────────────
+tzInput.addEventListener('focus', () => {
+    tzInput.select();
+    cbOpen_();
+});
+
+tzInput.addEventListener('input', () => {
+    cbQuery    = tzInput.value.trim();
+    cbFiltered = cbQuery
+        ? TZ_FLAT.filter(o => o.search.includes(cbQuery.toLowerCase()))
+        : TZ_FLAT;
+    cbActive = cbFiltered.length > 0 ? 0 : -1;
+    if (!cbOpen) {
+        cbOpen = true;
+        tzDropdown.style.display = 'block';
+        tzCombobox.setAttribute('aria-expanded', 'true');
+        tzCombobox.classList.add('open');
+    }
+    cbRender();
+});
+
+tzInput.addEventListener('keydown', e => {
+    if (!cbOpen && (e.key === 'ArrowDown' || e.key === 'Enter')) { cbOpen_(); return; }
+    switch (e.key) {
+        case 'ArrowDown':
+            e.preventDefault();
+            cbActive = Math.min(cbActive + 1, cbFiltered.length - 1);
+            cbMarkActive(); cbScrollActive();
+            break;
+        case 'ArrowUp':
+            e.preventDefault();
+            cbActive = Math.max(cbActive - 1, 0);
+            cbMarkActive(); cbScrollActive();
+            break;
+        case 'Enter':
+            e.preventDefault();
+            if (cbActive >= 0 && cbFiltered[cbActive]) cbSelect(cbFiltered[cbActive].id);
+            break;
+        case 'Tab':
+            // Select highlighted item (if any) then let Tab move focus naturally
+            if (cbActive >= 0 && cbFiltered[cbActive]) cbSelect(cbFiltered[cbActive].id);
+            cbClose();
+            break;
+        case 'Escape':
+            cbClose();
+            tzInput.blur();
+            break;
+    }
+});
+
+// Click outside → close
+document.addEventListener('click', e => { if (!tzCombobox.contains(e.target)) cbClose(); });
+
+// ── Time input helpers ────────────────────────────────────────────────────────
+function getH12()  { return Math.max(1, Math.min(12, parseInt(inpHour.value) || 12)); }
+function getMin()  { return Math.max(0, Math.min(59, parseInt(inpMin.value)  ||  0)); }
+function getAmpm() { return btnAmpm.textContent.trim(); }
+
+// Sanitise / clamp on blur
+inpHour.addEventListener('blur', () => {
+    inpHour.value = String(getH12());
+    inpHour.classList.remove('invalid');
+    convert(); saveDefaults();
+});
+inpMin.addEventListener('blur', () => {
+    inpMin.value = String(getMin()).padStart(2, '0');
+    inpMin.classList.remove('invalid');
+    convert(); saveDefaults();
+});
+
+// Live validation + auto-advance on input
+inpHour.addEventListener('input', () => {
+    const raw = inpHour.value.replace(/\D/g, '');
+    inpHour.value = raw;
+    const n = parseInt(raw) || 0;
+    inpHour.classList.toggle('invalid', raw.length > 0 && (n < 1 || n > 12));
+    // Auto-advance: digit 2–9 can't be a valid 2-digit hour start → jump immediately;
+    // two digits entered → jump
+    if (raw.length === 2 || (raw.length === 1 && n >= 2 && n <= 9)) inpMin.focus();
+    convert();
+});
+inpMin.addEventListener('input', () => {
+    const raw = inpMin.value.replace(/\D/g, '');
+    inpMin.value = raw;
+    const n = parseInt(raw) || 0;
+    inpMin.classList.toggle('invalid', raw.length === 2 && n > 59);
+    if (raw.length === 2) btnAmpm.focus();
+    convert();
+});
+
+// AM/PM toggle — click, Space/Enter, or press A / P
+btnAmpm.addEventListener('click', () => {
+    btnAmpm.textContent = getAmpm() === 'AM' ? 'PM' : 'AM';
+    convert(); saveDefaults();
+});
+btnAmpm.addEventListener('keydown', e => {
+    if (e.key === 'a' || e.key === 'A') { btnAmpm.textContent = 'AM'; convert(); saveDefaults(); }
+    if (e.key === 'p' || e.key === 'P') { btnAmpm.textContent = 'PM'; convert(); saveDefaults(); }
+    if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        btnAmpm.textContent = getAmpm() === 'AM' ? 'PM' : 'AM';
+        convert(); saveDefaults();
+    }
+});
+
+// ── Hour stepper buttons ──────────────────────────────────────────────────────
+document.getElementById('btn-hour-down').addEventListener('click', () => {
+    const h = getH12();
+    inpHour.value = String(h === 1 ? 12 : h - 1);
+    convert(); saveDefaults();
+});
+document.getElementById('btn-hour-up').addEventListener('click', () => {
+    const h = getH12();
+    inpHour.value = String(h === 12 ? 1 : h + 1);
+    convert(); saveDefaults();
+});
+
+// ── Conversion helpers ────────────────────────────────────────────────────────
+// Minutes UTC is ahead of `tz` (positive = tz is west of UTC, e.g. EST = +300)
+function tzOffsetMin(tz, date) {
+    const utc = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
+    const loc = new Date(date.toLocaleString('en-US', { timeZone: tz   }));
+    return (utc - loc) / 60000;
+}
+
+function fmtOffset(m) {
+    const sign = m <= 0 ? '+' : '−';
+    const a    = Math.abs(m);
+    return `UTC${sign}${String(Math.floor(a / 60)).padStart(2,'0')}:${String(a % 60).padStart(2,'0')}`;
+}
+
+// ── Main convert ──────────────────────────────────────────────────────────────
+const TARGETS = [
+    { tz: 'America/Santiago',    timeId: 'time-chile',    dayId: 'day-chile'    },
+    { tz: 'America/Bogota',      timeId: 'time-colombia', dayId: 'day-colombia' },
+    { tz: 'America/Mexico_City', timeId: 'time-mexico',   dayId: 'day-mexico'   },
+];
+
+function convert() {
+    const h12 = getH12();
+    const min = String(getMin()).padStart(2, '0');
+    const ap  = getAmpm();
+    let h24   = h12;
+    if (ap === 'PM' && h24 !== 12) h24 += 12;
+    if (ap === 'AM' && h24 === 12) h24  = 0;
+
+    const now    = new Date();
+    const utcRef = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(),
+                                     h24, parseInt(min), 0));
+    const srcOff = tzOffsetMin(selectedTZ, utcRef);
+    const actual = new Date(utcRef.getTime() + srcOff * 60000);
+
+    // Source date for day-diff comparison (sv-SE gives YYYY-MM-DD)
+    const srcDate = new Intl.DateTimeFormat('sv-SE', { timeZone: selectedTZ }).format(actual);
+
+    TARGETS.forEach(({ tz, timeId, dayId }) => {
+        const raw = new Intl.DateTimeFormat('en-US', {
+            timeZone: tz,
+            hour:   use24h ? '2-digit' : 'numeric',
+            minute: '2-digit',
+            hour12: !use24h,
+        }).format(actual);
+
+        const timeEl = document.getElementById(timeId);
+        timeEl.classList.remove('pop');
+        void timeEl.offsetWidth; // force reflow for re-animation
+        if (use24h) {
+            timeEl.textContent = raw;
+        } else {
+            const [timePart, ampmPart] = raw.split(' ');
+            timeEl.innerHTML = timePart
+                + `<span class="result-ampm">${ampmPart}</span>`;
+        }
+        timeEl.classList.add('pop');
+
+        // Day offset badge
+        const tgtDate = new Intl.DateTimeFormat('sv-SE', { timeZone: tz }).format(actual);
+        const diff    = Math.round(
+            (new Date(tgtDate + 'T12:00:00Z') - new Date(srcDate + 'T12:00:00Z')) / 86400000
+        );
+        const dayEl = document.getElementById(dayId);
+        dayEl.className = 'day-badge';
+        if (diff === 0) {
+            dayEl.classList.add('day-same'); dayEl.textContent = 'same day';
+        } else if (diff > 0) {
+            dayEl.classList.add('day-next');
+            dayEl.textContent = diff === 1 ? '+ next day' : `+${diff} days`;
+        } else {
+            dayEl.classList.add('day-prev');
+            dayEl.textContent = diff === -1 ? '− prev day' : `${diff} days`;
+        }
+    });
+}
+
+// ── LocalStorage ──────────────────────────────────────────────────────────────
+const LS_KEY = 'clientsays-v1';
+
+function saveDefaults() {
+    try {
+        localStorage.setItem(LS_KEY, JSON.stringify({
+            hour: inpHour.value, minute: inpMin.value,
+            ampm: getAmpm(), tz: selectedTZ,
+            fmt: use24h ? '24' : '12',
+        }));
+    } catch (_) {}
+    // Flash indicator
+    if (savedTimer) clearTimeout(savedTimer);
+    savedInd.classList.add('show');
+    savedTimer = setTimeout(() => savedInd.classList.remove('show'), 1800);
+}
+
+function loadSaved() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY)); } catch { return null; }
+}
+
+// ── URL share ─────────────────────────────────────────────────────────────────
+function buildShareURL() {
+    const p = new URLSearchParams({
+        h: inpHour.value, m: inpMin.value, ap: getAmpm(),
+        tz: selectedTZ, fmt: use24h ? '24' : '12',
+    });
+    return `${location.origin}${location.pathname}?${p}`;
+}
+
+function loadFromURL() {
+    const p = new URLSearchParams(location.search);
+    if (!p.has('h')) return false;
+    if (p.has('h'))  inpHour.value       = p.get('h');
+    if (p.has('m'))  inpMin.value        = p.get('m');
+    if (p.has('ap')) btnAmpm.textContent = p.get('ap');
+    if (p.has('fmt')) use24h = p.get('fmt') === '24';
+    if (p.has('tz')) {
+        const id = p.get('tz');
+        if (TZ_FLAT.find(o => o.id === id)) selectedTZ = id;
+    }
+    return true;
+}
+
+// ── 12h / 24h toggle ─────────────────────────────────────────────────────────
+[btn12h, btn24h].forEach(btn =>
+    btn.addEventListener('click', () => {
+        use24h = btn.dataset.fmt === '24';
+        btn12h.classList.toggle('active', !use24h);
+        btn24h.classList.toggle('active',  use24h);
+        convert();
+        saveDefaults();
+    })
+);
+
+// ── Copy result buttons ───────────────────────────────────────────────────────
+const COPY_SVG  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+const CHECK_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+function flashBtn(btn, successHTML, duration = 1800) {
+    const orig = btn.innerHTML;
+    btn.innerHTML = successHTML;
+    setTimeout(() => { btn.innerHTML = orig; }, duration);
+}
+
+document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const timeEl = document.getElementById('time-' + btn.dataset.target);
+        navigator.clipboard?.writeText(timeEl.textContent.trim()).then(() => {
+            btn.classList.add('copied');
+            flashBtn(btn, CHECK_SVG);
+            setTimeout(() => btn.classList.remove('copied'), 1800);
+        });
+    });
+});
+
+// ── Share button ──────────────────────────────────────────────────────────────
+btnShare.addEventListener('click', () => {
+    navigator.clipboard?.writeText(buildShareURL()).then(() => {
+        btnShare.classList.add('copied');
+        flashBtn(btnShare,
+            `${CHECK_SVG} <span>Link copied!</span>`, 2000);
+        setTimeout(() => btnShare.classList.remove('copied'), 2000);
+    });
+});
+
+// ── Now button ────────────────────────────────────────────────────────────────
+btnNow.addEventListener('click', () => {
+    const n   = new Date();
+    const h24 = n.getHours();
+    inpHour.value       = String(h24 % 12 || 12);
+    inpMin.value        = String(n.getMinutes()).padStart(2, '0');
+    btnAmpm.textContent = h24 < 12 ? 'AM' : 'PM';
+    convert();
+    saveDefaults();
+    // 🔥 flash
+    const orig = btnNow.innerHTML;
+    btnNow.innerHTML = '🔥';
+    btnNow.classList.add('fired');
+    setTimeout(() => {
+        btnNow.innerHTML = orig;
+        btnNow.classList.remove('fired');
+    }, 950);
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+(function init() {
+    // Priority: URL params > localStorage > local time / local TZ
+    const fromURL = loadFromURL();
+    if (!fromURL) {
+        const saved = loadSaved();
+        if (saved) {
+            if (saved.hour)   inpHour.value       = saved.hour;
+            if (saved.minute) inpMin.value        = saved.minute;
+            if (saved.ampm)   btnAmpm.textContent = saved.ampm;
+            if (saved.fmt)    use24h = saved.fmt === '24';
+            if (saved.tz && TZ_FLAT.find(o => o.id === saved.tz)) selectedTZ = saved.tz;
+        } else {
+            // Default: current local time + detected timezone
+            const n   = new Date();
+            const h24 = n.getHours();
+            inpHour.value       = String(h24 % 12 || 12);
+            inpMin.value        = String(n.getMinutes()).padStart(2, '0');
+            btnAmpm.textContent = h24 < 12 ? 'AM' : 'PM';
+            const localTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            if (TZ_FLAT.find(o => o.id === localTZ)) selectedTZ = localTZ;
+        }
+    }
+
+    btn12h.classList.toggle('active', !use24h);
+    btn24h.classList.toggle('active',  use24h);
+    tzInput.value = cbDisplayText(selectedTZ);
+    sizeTzInput();
+    convert();
+})();
+
+// ── Mobile nav hamburger ──────────────────────────────────────────────────────
+const navToggle = document.getElementById('nav-toggle');
+const mainNav   = document.getElementById('main-nav');
+
+navToggle.addEventListener('click', e => {
+    e.stopPropagation();
+    const open = mainNav.classList.toggle('open');
+    navToggle.setAttribute('aria-expanded', open);
+});
+
+// Close when tapping outside
+document.addEventListener('click', e => {
+    if (mainNav.classList.contains('open') &&
+        !mainNav.contains(e.target) &&
+        !navToggle.contains(e.target)) {
+        mainNav.classList.remove('open');
+        navToggle.setAttribute('aria-expanded', 'false');
+    }
+});
+
+// Close when a nav link is followed
+mainNav.querySelectorAll('a').forEach(a =>
+    a.addEventListener('click', () => {
+        mainNav.classList.remove('open');
+        navToggle.setAttribute('aria-expanded', 'false');
+    })
+);
+</script>
+</body>
+</html>
