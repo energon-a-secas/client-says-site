@@ -67,7 +67,7 @@ The picker matches on timezone ID, city name, full name, live abbreviation (e.g.
 ## Running locally
 
 ```bash
-cd "Client Says"
+cd client-says-site
 python3 -m http.server 8080
 # open http://localhost:8080
 ```

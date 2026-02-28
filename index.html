@@ -3,11 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Client Says</title>
+    <title>Client Says — Timezone Converter for Remote Teams</title>
+    <meta name="description" content="Enter the time your client mentioned and instantly convert it to Chile, Colombia, and Mexico. DST-aware, no install.">
+    <meta property="og:title" content="Client Says — Timezone Converter">
+    <meta property="og:description" content="Enter the time your client mentioned and instantly convert it to Chile, Colombia, and Mexico. DST-aware, no install.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ehq.cl/">
+    <meta property="og:site_name" content="Energon">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Client Says — Timezone Converter">
+    <meta name="twitter:description" content="Enter the time your client mentioned and instantly convert it to Chile, Colombia, and Mexico. DST-aware, no install.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ehq.cl/">
+    <meta name="theme-color" content="#040714">
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
     <style>
         /* ── Reset & base ─────────────────────────────────────────────────── */
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #040714;
+            --surface-1: rgba(255,255,255,.03);
+            --surface-2: rgba(255,255,255,.06);
+            --border-subtle: rgba(255,255,255,.07);
+            --border: rgba(255,255,255,.1);
+            --border-strong: rgba(255,255,255,.22);
+            --text-primary: #f9f9f9;
+            --text-secondary: #cacaca;
+            --text-muted: rgba(255,255,255,.45);
+            --accent: #0063e5;
+            --accent-bright: #0080ff;
+            --font: 'Avenir Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            --text-xs:   0.75rem;
+            --text-sm:   0.875rem;
+            --text-base: 1rem;
+            --text-lg:   1.125rem;
+            --text-xl:   1.25rem;
+            --text-2xl:  1.5rem;
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-6: 24px;
+            --space-8: 32px;
+            --radius-sm: 6px;
+            --radius: 10px;
+            --radius-lg: 15px;
+            --ease-snap: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --dur-fast: 120ms;
+            --dur: 200ms;
+        }
 
         body {
             font-family: 'Avenir Next', -apple-system, BlinkMacSystemFont,
@@ -359,14 +406,39 @@
             .header-bar { flex-wrap: wrap; }
             .header-logo { flex: 1; }
         }
+
+        /* ── Focus rings (keyboard accessibility) ── */
+        nav a:focus-visible,
+        .tz-option:focus-visible {
+            outline: 2px solid #0063e5;
+            outline-offset: 2px;
+        }
+        .search-input:focus-visible {
+            border-color: #0063e5;
+            box-shadow: 0 0 0 3px rgba(0,99,229,.2);
+            outline: none;
+        }
     </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Client Says — Timezone Converter",
+  "description": "Enter the time your client mentioned and instantly convert it to Chile, Colombia, and Mexico. DST-aware, no install.",
+  "url": "https://ehq.cl/",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Organization", "name": "Energon", "url": "https://ehq.cl/" }
+}
+</script>
 </head>
 <body>
 
 <!-- ── Header ──────────────────────────────────────────────────────────────── -->
 <div class="header-bar">
     <div class="header-logo">
-        <a href="https://ehq.cl/" target="_blank" rel="noopener"><img src="energon-classic-logo.png" class="header-logo-img" alt="Neorgon"></a>
+        <a href="https://ehq.cl/" target="_blank" rel="noopener noreferrer"><img src="energon-classic-logo.png" class="header-logo-img" alt="Neorgon"></a>
         <div>
             <h1>Client Says</h1>
             <div class="header-subtitle">Timezone Converter for Remote Teams</div>
@@ -386,7 +458,7 @@
         <a href="index.html" class="active">Timezone</a>
         <a href="jargon.html">Decoded</a>
     </nav>
-    <a href="https://ehq.cl/" class="header-home" title="ehq.cl" target="_blank" rel="noopener">
+    <a href="https://ehq.cl/" class="header-home" title="ehq.cl" target="_blank" rel="noopener noreferrer">
         <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
     </a>
 </div>
