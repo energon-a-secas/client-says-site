@@ -1,8 +1,36 @@
+<div align="center">
+
 # Client Says
 
-A single-page timezone converter for remote teams. Type the time your client mentioned and instantly see it in Chile, Colombia, and Mexico — Daylight Saving Time handled automatically.
+Type the time your client mentioned and get it in your timezone instantly. DST-aware, shareable links, no install.
 
-**Live:** [ehq.cl](https://ehq.cl/) · runs entirely in the browser, no build step, no backend.
+[![Live][badge-site]][url-site]
+[![HTML5][badge-html]][url-html]
+[![CSS3][badge-css]][url-css]
+[![JavaScript][badge-js]][url-js]
+[![Claude Code][badge-claude]][url-claude]
+[![License][badge-license]](LICENSE)
+
+[badge-site]:    https://img.shields.io/badge/live_site-0063e5?style=for-the-badge&logo=googlechrome&logoColor=white
+[badge-html]:    https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white
+[badge-css]:     https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white
+[badge-js]:      https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black
+[badge-claude]:  https://img.shields.io/badge/Claude_Code-CC785C?style=for-the-badge&logo=anthropic&logoColor=white
+[badge-license]: https://img.shields.io/badge/license-MIT-404040?style=for-the-badge
+
+[url-site]:   https://clientsays.neorgon.com/
+[url-html]:   #
+[url-css]:    #
+[url-js]:     #
+[url-claude]: https://claude.ai/code
+
+</div>
+
+---
+
+A two-page tool for remote teams. Type the time your client mentioned and instantly see it in Chile, Colombia, and Mexico — Daylight Saving Time handled automatically. The second page translates corporate jargon into plain English.
+
+**Live:** [clientsays.neorgon.com](https://clientsays.neorgon.com/) · runs entirely in the browser, no build step, no backend.
 
 ---
 
@@ -79,3 +107,9 @@ Or just open `index.html` directly in a browser — no dependencies, no install.
 ## Tech
 
 Pure HTML + CSS + JavaScript. Conversion uses the [ECMAScript Internationalization API](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl) (`Intl.DateTimeFormat`) which ships with every modern browser and is backed by the IANA timezone database.
+
+---
+
+<div align="center">
+  <sub>Part of <a href="https://neorgon.com">Neorgon</a></sub>
+</div>
