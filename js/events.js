@@ -1,7 +1,7 @@
 // ── events.js — Event handlers, user interactions ────────────────────────────
 
 import { state, TZ_FLAT } from './state.js';
-import { getH12, getMin, getAmpm, flashBtn, buildShareURL, COPY_SVG, CHECK_SVG } from './utils.js';
+import { getH12, getMin, getAmpm, flashBtn, buildShareURL, showToast, COPY_SVG, CHECK_SVG } from './utils.js';
 import {
     cb, cbOpen_, cbClose, cbSelect, cbRender, cbMarkActive, cbScrollActive,
     convert, saveDefaults, sizeTzInput,
@@ -152,6 +152,7 @@ export function bindEvents() {
                 btn.classList.add('copied');
                 flashBtn(btn, CHECK_SVG);
                 setTimeout(() => btn.classList.remove('copied'), 1800);
+                showToast('Time copied!');
             });
         });
     });
@@ -163,6 +164,7 @@ export function bindEvents() {
             flashBtn(btnShare,
                 `${CHECK_SVG} <span>Link copied!</span>`, 2000);
             setTimeout(() => btnShare.classList.remove('copied'), 2000);
+            showToast('Share link copied!');
         });
     });
 

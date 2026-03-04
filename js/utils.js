@@ -42,6 +42,22 @@ export function hl(text, q) {
         + safe.slice(idx + q.length);
 }
 
+// ── Toast notification ───────────────────────────────────────────────────────
+let _toastTimer = null;
+export function showToast(msg) {
+    let el = document.getElementById('app-toast');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'app-toast';
+        el.className = 'toast';
+        document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.classList.add('visible');
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => el.classList.remove('visible'), 2000);
+}
+
 // ── Flash a button's inner HTML temporarily ──────────────────────────────────
 export function flashBtn(btn, successHTML, duration = 1800) {
     const orig = btn.innerHTML;
