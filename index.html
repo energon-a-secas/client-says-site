@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Client Says — Timezone Converter</title>
-    <meta name="description" content="Type the time your client mentioned and get it in your timezone instantly. DST-aware, shareable links, works without installing a thing.">
-    <meta property="og:title" content="Client Says — Timezone Converter">
+    <title>Client Says: Timezone Converter</title>
+    <meta name="description" content="Type the time your client mentioned and get it in your timezone instantly. DST-aware, shareable links, no install needed">
+    <meta property="og:title" content="Client Says: Timezone Converter">
     <meta property="og:description" content="Type the time your client said, get it in your timezone instantly. DST-aware, no install.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://clientsays.neorgon.com/">
     <meta property="og:site_name" content="Neorgon">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Client Says — Timezone Converter">
+    <meta name="twitter:title" content="Client Says: Timezone Converter">
     <meta name="twitter:description" content="Type the time your client said, get it in your timezone instantly. DST-aware, no install.">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://clientsays.neorgon.com/">
@@ -26,7 +26,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
     <style>
         /* ── Reset & base ─────────────────────────────────────────────────── */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
             --bg: #040714;
@@ -37,7 +37,7 @@
             --border-strong: rgba(255,255,255,.22);
             --text-primary: #f9f9f9;
             --text-secondary: #cacaca;
-            --text-muted: rgba(255,255,255,.45);
+            --text-muted: rgba(255,255,255,.55);
             --accent: #0063e5;
             --accent-bright: #0080ff;
             --font: 'Avenir Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -73,7 +73,7 @@
 
         /* ── Header ───────────────────────────────────────────────────────── */
         .header-bar {
-            background: linear-gradient(135deg, #B015B0 0%, #3D0080 45%, #080010 100%);
+            background: linear-gradient(in oklch 135deg, #B015B0 0%, #3D0080 50%, #040714 100%);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.07);
             padding: 0 24px;
@@ -413,9 +413,8 @@
         }
 
         /* ── Focus rings (keyboard accessibility) ── */
-        nav a:focus-visible,
-        .tz-option:focus-visible {
-            outline: 2px solid #0063e5;
+        :focus-visible {
+            outline: 2px solid var(--accent-bright, #0080ff);
             outline-offset: 2px;
         }
         .search-input:focus-visible {
@@ -423,13 +422,23 @@
             box-shadow: 0 0 0 3px rgba(0,99,229,.2);
             outline: none;
         }
+        .skip-link {
+            position: absolute; top: -100%; left: 16px; z-index: 1000;
+            padding: 8px 16px; background: var(--accent-bright, #0080ff); color: #000;
+            font-weight: 600; font-size: .875rem; border-radius: 0 0 6px 6px;
+            text-decoration: none; transition: top .2s;
+        }
+        .skip-link:focus { top: 0; }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
     </style>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Client Says — Timezone Converter",
-  "description": "Enter the time your client mentioned and instantly convert it to Chile, Colombia, and Mexico. DST-aware, no install.",
+  "name": "Client Says: Timezone Converter",
+  "description": "Type the time your client mentioned and instantly convert it to Chile, Colombia, and Mexico. DST-aware, no install.",
   "url": "https://ehq.cl/",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
@@ -440,8 +449,9 @@
 </head>
 <body>
 
+<a class="skip-link" href="#main">Skip to content</a>
 <!-- ── Header ──────────────────────────────────────────────────────────────── -->
-<div class="header-bar">
+<header class="header-bar">
     <div class="header-logo">
         <a href="https://ehq.cl/" target="_blank" rel="noopener noreferrer"><img src="energon-classic-logo.png" class="header-logo-img" alt="Neorgon"></a>
         <div>
@@ -463,13 +473,13 @@
         <a href="index.html" class="active">Timezone</a>
         <a href="jargon/">Decoded</a>
     </nav>
-    <a href="https://neorgon.com/" class="header-home" title="neorgon.com" target="_blank" rel="noopener noreferrer">
+    <a href="https://neorgon.com/" class="header-home" title="neorgon.com" aria-label="Neorgon home" target="_blank" rel="noopener noreferrer">
         <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
     </a>
-</div>
+</header>
 
 <!-- ── Main ────────────────────────────────────────────────────────────────── -->
-<div class="container">
+<main id="main" class="container">
 
     <div class="card" id="card-input">
 
@@ -529,7 +539,7 @@
                      stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="20 6 9 17 4 12"/>
                 </svg>
-                Settings remembered
+                Settings saved
             </div>
         </div>
     </div>
@@ -609,11 +619,11 @@
     </div>
 
 
-</div><!-- /container -->
+</main><!-- /container -->
 
 <footer class="info-footer">
-    Powered by the IANA Timezone Database · Times auto-adjust for Daylight Saving Time<br>
-    Share links carry the exact time &amp; timezone · Settings are remembered in your browser
+    Uses the IANA Timezone Database · Times auto-adjust for Daylight Saving Time<br>
+    Share links carry the exact time &amp; timezone · Your browser saves your settings
 </footer>
 
 <script>
