@@ -92,6 +92,27 @@ The picker matches on timezone ID, city name, full name, live abbreviation (e.g.
 
 ---
 
+## Architecture
+
+![Architecture](docs/architecture.svg)
+
+```
+client-says-site/
+├── index.html          # Timezone converter app shell
+├── css/
+│   └── style.css       # All styles
+├── js/
+│   ├── app.js          # Entry point
+│   ├── state.js        # Timezone + localStorage
+│   ├── render.js       # Result cards
+│   ├── events.js       # Search, share, copy, now button
+│   └── utils.js        # Helpers
+└── jargon/
+    └── index.html      # Jargon translator — single file
+```
+
+---
+
 ## Running locally
 
 ```bash
