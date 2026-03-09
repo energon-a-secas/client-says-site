@@ -11,3 +11,6 @@ npm-debug.log*
 # ── Secrets — never commit ────────────────────────────────────────────────────
 .env
 .env.*
+
+# Claude AI guidance (maintained centrally in .claude/project-claudes/)
+CLAUDE.md
