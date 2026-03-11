@@ -46,7 +46,9 @@
       "mcp__plugin_playwright_playwright__browser_run_code",
       "mcp__plugin_playwright_playwright__browser_snapshot",
       "mcp__plugin_playwright_playwright__browser_hover",
-      "Skill(claude-md-management:revise-claude-md)"
+      "Skill(claude-md-management:revise-claude-md)",
+      "Bash(lsof -ti :8803 | xargs kill 2>/dev/null; true)",
+      "mcp__plugin_playwright_playwright__browser_type"
     ],
     "deny": [
       "Bash(git push:*)",
@@ -54,5 +56,9 @@
       "Bash(git push --force:*)",
       "Bash(git reset --hard:*)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "context7"
+  ]
 }

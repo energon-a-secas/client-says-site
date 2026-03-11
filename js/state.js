@@ -1,10 +1,55 @@
 // ── state.js — Mutable state, timezone data, target definitions ─────────────
 
+// ── Available conversion targets (all supported destinations) ────────────────
+export const AVAILABLE_TARGETS = [
+    { tz: 'UTC',                            flag: '🌐', country: 'UTC / GMT',     city: 'Universal Time',        region: 'UTC / GMT'    },
+    { tz: 'America/New_York',               flag: '🇺🇸', country: 'United States', city: 'New York · Eastern',    region: 'Americas'     },
+    { tz: 'America/Chicago',                flag: '🇺🇸', country: 'United States', city: 'Chicago · Central',     region: 'Americas'     },
+    { tz: 'America/Denver',                 flag: '🇺🇸', country: 'United States', city: 'Denver · Mountain',     region: 'Americas'     },
+    { tz: 'America/Los_Angeles',            flag: '🇺🇸', country: 'United States', city: 'Los Angeles · Pacific', region: 'Americas'     },
+    { tz: 'America/Phoenix',                flag: '🇺🇸', country: 'United States', city: 'Phoenix · Arizona',     region: 'Americas'     },
+    { tz: 'America/Anchorage',              flag: '🇺🇸', country: 'United States', city: 'Anchorage · Alaska',    region: 'Americas'     },
+    { tz: 'Pacific/Honolulu',               flag: '🇺🇸', country: 'United States', city: 'Honolulu · Hawaii',     region: 'Americas'     },
+    { tz: 'America/Toronto',                flag: '🇨🇦', country: 'Canada',         city: 'Toronto',               region: 'Americas'     },
+    { tz: 'America/Vancouver',              flag: '🇨🇦', country: 'Canada',         city: 'Vancouver',             region: 'Americas'     },
+    { tz: 'America/Argentina/Buenos_Aires', flag: '🇦🇷', country: 'Argentina',      city: 'Buenos Aires',          region: 'Americas'     },
+    { tz: 'America/Sao_Paulo',              flag: '🇧🇷', country: 'Brazil',         city: 'São Paulo',             region: 'Americas'     },
+    { tz: 'America/Santiago',               flag: '🇨🇱', country: 'Chile',          city: 'Santiago',              region: 'Americas'     },
+    { tz: 'America/Bogota',                 flag: '🇨🇴', country: 'Colombia',       city: 'Bogotá',                region: 'Americas'     },
+    { tz: 'America/Lima',                   flag: '🇵🇪', country: 'Peru',           city: 'Lima',                  region: 'Americas'     },
+    { tz: 'America/Caracas',                flag: '🇻🇪', country: 'Venezuela',      city: 'Caracas',               region: 'Americas'     },
+    { tz: 'America/Mexico_City',            flag: '🇲🇽', country: 'Mexico',         city: 'Mexico City',           region: 'Americas'     },
+    { tz: 'Europe/London',                  flag: '🇬🇧', country: 'United Kingdom', city: 'London',                region: 'Europe'       },
+    { tz: 'Europe/Lisbon',                  flag: '🇵🇹', country: 'Portugal',       city: 'Lisbon',                region: 'Europe'       },
+    { tz: 'Europe/Paris',                   flag: '🇫🇷', country: 'France',         city: 'Paris',                 region: 'Europe'       },
+    { tz: 'Europe/Madrid',                  flag: '🇪🇸', country: 'Spain',          city: 'Madrid',                region: 'Europe'       },
+    { tz: 'Europe/Berlin',                  flag: '🇩🇪', country: 'Germany',        city: 'Berlin',                region: 'Europe'       },
+    { tz: 'Europe/Amsterdam',               flag: '🇳🇱', country: 'Netherlands',    city: 'Amsterdam',             region: 'Europe'       },
+    { tz: 'Europe/Moscow',                  flag: '🇷🇺', country: 'Russia',         city: 'Moscow',                region: 'Europe'       },
+    { tz: 'Asia/Dubai',                     flag: '🇦🇪', country: 'UAE',            city: 'Dubai',                 region: 'Asia & Pacific'},
+    { tz: 'Asia/Kolkata',                   flag: '🇮🇳', country: 'India',          city: 'Mumbai',                region: 'Asia & Pacific'},
+    { tz: 'Asia/Singapore',                 flag: '🇸🇬', country: 'Singapore',      city: 'Singapore',             region: 'Asia & Pacific'},
+    { tz: 'Asia/Tokyo',                     flag: '🇯🇵', country: 'Japan',          city: 'Tokyo',                 region: 'Asia & Pacific'},
+    { tz: 'Australia/Sydney',               flag: '🇦🇺', country: 'Australia',      city: 'Sydney',                region: 'Asia & Pacific'},
+    { tz: 'Pacific/Auckland',               flag: '🇳🇿', country: 'New Zealand',    city: 'Auckland',              region: 'Asia & Pacific'},
+];
+
+export const LS_KEY_TARGETS = 'clientsays-targets-v1';
+
+function _loadSavedTargets() {
+    try {
+        const s = JSON.parse(localStorage.getItem('clientsays-targets-v1'));
+        if (Array.isArray(s) && s.length > 0) return s;
+    } catch {}
+    return ['America/Santiago', 'America/Bogota', 'America/Mexico_City'];
+}
+
 // ── Mutable state (exported as object so mutations are shared) ───────────────
 export const state = {
     use24h:     false,
     selectedTZ: 'America/New_York',
     savedTimer: null,
+    targets:    _loadSavedTargets(),
 };
 
 // ── Randomised quotes ────────────────────────────────────────────────────────
@@ -124,13 +169,6 @@ export const TZ_FLAT = TZ_GROUPS.flatMap(g =>
                  search: `${id} ${label} ${abbr} ${aliases}`.toLowerCase() };
     })
 );
-
-// ── Conversion targets ───────────────────────────────────────────────────────
-export const TARGETS = [
-    { tz: 'America/Santiago',    timeId: 'time-chile',    dayId: 'day-chile'    },
-    { tz: 'America/Bogota',      timeId: 'time-colombia', dayId: 'day-colombia' },
-    { tz: 'America/Mexico_City', timeId: 'time-mexico',   dayId: 'day-mexico'   },
-];
 
 // ── LocalStorage key ─────────────────────────────────────────────────────────
 export const LS_KEY = 'clientsays-v1';

@@ -1,7 +1,84 @@
 // ── render.js — DOM rendering, combobox, timezone display ────────────────────
 
-import { state, TZ_FLAT, TARGETS, LS_KEY } from './state.js';
-import { getH12, getMin, getAmpm, tzOffsetMin, hl } from './utils.js';
+import { state, TZ_FLAT, AVAILABLE_TARGETS, LS_KEY, LS_KEY_TARGETS } from './state.js';
+import { getH12, getMin, getAmpm, tzOffsetMin, hl, COPY_SVG } from './utils.js';
+
+// ── Card color palette (cycles for N destinations) ───────────────────────────
+const CARD_COLORS = [
+    ['#0052d6', '#0075ff', '0,82,214'],
+    ['#0063e5', '#0080ff', '0,99,229'],
+    ['#0047ab', '#0068cc', '0,71,171'],
+    ['#005a9e', '#0078d4', '0,90,158'],
+    ['#003d7a', '#005ab5', '0,61,122'],
+    ['#1a3a8a', '#2052cc', '26,58,138'],
+    ['#0d4fa0', '#1568c2', '13,79,160'],
+    ['#01579b', '#0277bd', '1,87,155'],
+];
+
+// Stable CSS-safe ID from a timezone string
+export function tzToId(tz) {
+    return tz.toLowerCase().replace(/\//g, '-').replace(/_/g, '-');
+}
+
+const DRAG_HANDLE_SVG = `<svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor" aria-hidden="true">
+    <circle cx="3" cy="2"  r="1.3"/><circle cx="7" cy="2"  r="1.3"/>
+    <circle cx="3" cy="7"  r="1.3"/><circle cx="7" cy="7"  r="1.3"/>
+    <circle cx="3" cy="12" r="1.3"/><circle cx="7" cy="12" r="1.3"/>
+</svg>`;
+
+// ── Render result cards dynamically from state.targets ───────────────────────
+export function renderResultCards() {
+    const grid = document.getElementById('results-grid');
+    grid.innerHTML = state.targets.map((tz, i) => {
+        const meta = AVAILABLE_TARGETS.find(t => t.tz === tz);
+        if (!meta) return '';
+        const id = tzToId(tz);
+        const [c1, c2, rgb] = CARD_COLORS[i % CARD_COLORS.length];
+        return `<div class="result-card" id="card-${id}" data-tz="${tz}"
+                     style="background:linear-gradient(140deg,${c1} 0%,${c2} 100%);box-shadow:0 8px 32px rgba(${rgb},.35);--card-rgb:${rgb}">
+                    <button class="drag-handle" title="Drag to reorder" aria-label="Drag to reorder">${DRAG_HANDLE_SVG}</button>
+                    <button class="copy-btn" data-time-id="time-${id}" title="Copy time">${COPY_SVG}</button>
+                    <div class="result-flag">${meta.flag}</div>
+                    <div class="result-country">${meta.country}</div>
+                    <div class="result-city">${meta.city}</div>
+                    <div class="result-time" id="time-${id}">&mdash;</div>
+                    <div><span class="day-badge day-same" id="day-${id}"> </span></div>
+                </div>`;
+    }).join('');
+}
+
+// ── Render country picker content (optionally filtered by query) ─────────────
+export function renderPicker(query = '') {
+    const list = document.getElementById('picker-list');
+    const q = query.trim().toLowerCase();
+    const regions = [...new Set(AVAILABLE_TARGETS.map(t => t.region))];
+    const html = regions.map(region => {
+        const items = AVAILABLE_TARGETS.filter(t => {
+            if (t.region !== region) return false;
+            if (!q) return true;
+            return (t.country + ' ' + t.city + ' ' + t.tz + ' ' + t.flag + ' ' + t.region)
+                .toLowerCase().includes(q);
+        });
+        if (items.length === 0) return '';
+        return `<div class="picker-region">${region}</div>`
+            + items.map(meta => `
+                <label class="picker-item">
+                    <input type="checkbox" class="picker-checkbox" data-tz="${meta.tz}"
+                           ${state.targets.includes(meta.tz) ? 'checked' : ''}>
+                    <span class="picker-flag">${meta.flag}</span>
+                    <span class="picker-info">
+                        <span class="picker-country">${meta.country}</span>
+                        <span class="picker-city">${meta.city}</span>
+                    </span>
+                </label>`).join('');
+    }).join('');
+    list.innerHTML = html || '<div class="picker-no-results">No results for that search.</div>';
+}
+
+// ── Save selected destinations to localStorage ───────────────────────────────
+export function saveTargets() {
+    try { localStorage.setItem(LS_KEY_TARGETS, JSON.stringify(state.targets)); } catch {}
+}
 
 // ── DOM refs (cached on first call via lazy getter) ──────────────────────────
 let _els = null;
@@ -143,7 +220,11 @@ export function convert() {
     // Source date for day-diff comparison (sv-SE gives YYYY-MM-DD)
     const srcDate = new Intl.DateTimeFormat('sv-SE', { timeZone: state.selectedTZ }).format(actual);
 
-    TARGETS.forEach(({ tz, timeId, dayId }) => {
+    state.targets.forEach(tz => {
+        const id     = tzToId(tz);
+        const timeId = `time-${id}`;
+        const dayId  = `day-${id}`;
+
         const raw = new Intl.DateTimeFormat('en-US', {
             timeZone: tz,
             hour:   state.use24h ? '2-digit' : 'numeric',
@@ -152,6 +233,7 @@ export function convert() {
         }).format(actual);
 
         const timeEl = document.getElementById(timeId);
+        if (!timeEl) return;
         timeEl.classList.remove('pop');
         void timeEl.offsetWidth; // force reflow for re-animation
         if (state.use24h) {
@@ -169,6 +251,7 @@ export function convert() {
             (new Date(tgtDate + 'T12:00:00Z') - new Date(srcDate + 'T12:00:00Z')) / 86400000
         );
         const dayEl = document.getElementById(dayId);
+        if (!dayEl) return;
         dayEl.className = 'day-badge';
         if (diff === 0) {
             dayEl.classList.add('day-same'); dayEl.textContent = 'same day';

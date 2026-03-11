@@ -138,57 +138,46 @@
         </div>
     </div>
 
-    <!-- ── Result cards ─────────────────────────────────────────────────── -->
-    <div class="results-grid">
+    <!-- ── Result cards (rendered dynamically by render.js) ────────────── -->
+    <div class="results-grid" id="results-grid"></div>
 
-        <div class="result-card" id="card-chile">
-            <button class="copy-btn" data-target="chile" title="Copy time">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2"
-                     stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+    <!-- ── Destinations bar ─────────────────────────────────────────────── -->
+    <div class="destinations-bar">
+        <button class="add-dest-btn" id="btn-add-destinations" aria-label="Edit destinations">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Edit destinations
+        </button>
+    </div>
+
+    <!-- ── Country picker modal ──────────────────────────────────────────── -->
+    <div class="picker-overlay" id="country-picker-modal" role="dialog" aria-modal="true" aria-label="Edit destinations">
+        <div class="picker-panel">
+            <div class="picker-header">
+                <span class="picker-title">Destinations</span>
+                <button class="picker-close" id="picker-close" aria-label="Close">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2.5"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="picker-search-wrap">
+                <svg class="picker-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 </svg>
-            </button>
-            <div class="result-flag">&#x1F1E8;&#x1F1F1;</div>
-            <div class="result-country">Chile</div>
-            <div class="result-city">America / Santiago</div>
-            <div class="result-time" id="time-chile">&mdash;</div>
-            <div><span class="day-badge day-same" id="day-chile"> </span></div>
+                <input id="picker-search" type="search" class="picker-search-input"
+                       placeholder="Search country, city, flag, timezone…" autocomplete="off" spellcheck="false">
+            </div>
+            <div class="picker-list" id="picker-list"></div>
         </div>
-
-        <div class="result-card" id="card-colombia">
-            <button class="copy-btn" data-target="colombia" title="Copy time">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2"
-                     stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                </svg>
-            </button>
-            <div class="result-flag">&#x1F1E8;&#x1F1F4;</div>
-            <div class="result-country">Colombia</div>
-            <div class="result-city">America / Bogota</div>
-            <div class="result-time" id="time-colombia">&mdash;</div>
-            <div><span class="day-badge day-same" id="day-colombia"> </span></div>
-        </div>
-
-        <div class="result-card" id="card-mexico">
-            <button class="copy-btn" data-target="mexico" title="Copy time">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2"
-                     stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                </svg>
-            </button>
-            <div class="result-flag">&#x1F1F2;&#x1F1FD;</div>
-            <div class="result-country">Mexico</div>
-            <div class="result-city">America / Mexico_City</div>
-            <div class="result-time" id="time-mexico">&mdash;</div>
-            <div><span class="day-badge day-same" id="day-mexico"> </span></div>
-        </div>
-
     </div>
 
     <!-- ── Actions bar ──────────────────────────────────────────────────── -->

@@ -1,7 +1,7 @@
 // ── app.js — Entry point ─────────────────────────────────────────────────────
 
 import { state, QUOTES, TZ_FLAT } from './state.js';
-import { cbDisplayText, sizeTzInput, convert, loadSaved, loadFromURL } from './render.js';
+import { cbDisplayText, sizeTzInput, convert, loadSaved, loadFromURL, renderResultCards } from './render.js';
 import { bindEvents } from './events.js';
 
 // ── Randomised quote ─────────────────────────────────────────────────────────
@@ -42,6 +42,7 @@ btn12h.classList.toggle('active', !state.use24h);
 btn24h.classList.toggle('active',  state.use24h);
 tzInput.value = cbDisplayText(state.selectedTZ);
 sizeTzInput();
+renderResultCards();
 convert();
 
 // ── Bind all event listeners ─────────────────────────────────────────────────

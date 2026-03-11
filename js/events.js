@@ -5,6 +5,7 @@ import { getH12, getMin, getAmpm, flashBtn, buildShareURL, showToast, COPY_SVG, 
 import {
     cb, cbOpen_, cbClose, cbSelect, cbRender, cbMarkActive, cbScrollActive,
     convert, saveDefaults, sizeTzInput,
+    renderResultCards, renderPicker, saveTargets,
 } from './render.js';
 
 // ── Bind all event listeners ─────────────────────────────────────────────────
@@ -144,17 +145,115 @@ export function bindEvents() {
         })
     );
 
-    // ── Copy result buttons ──────────────────────────────────────────────────
-    document.querySelectorAll('.copy-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const timeEl = document.getElementById('time-' + btn.dataset.target);
-            navigator.clipboard?.writeText(timeEl.textContent.trim()).then(() => {
-                btn.classList.add('copied');
-                flashBtn(btn, CHECK_SVG);
-                setTimeout(() => btn.classList.remove('copied'), 1800);
-                showToast('Time copied!');
-            });
+    // ── Copy result buttons (delegated — cards are rendered dynamically) ────────
+    document.getElementById('results-grid').addEventListener('click', e => {
+        const btn = e.target.closest('.copy-btn');
+        if (!btn) return;
+        const timeEl = document.getElementById(btn.dataset.timeId);
+        if (!timeEl) return;
+        navigator.clipboard?.writeText(timeEl.textContent.trim()).then(() => {
+            btn.classList.add('copied');
+            flashBtn(btn, CHECK_SVG);
+            setTimeout(() => btn.classList.remove('copied'), 1800);
+            showToast('Time copied!');
         });
+    });
+
+    // ── Drag-to-reorder cards ────────────────────────────────────────────────
+    const grid = document.getElementById('results-grid');
+    let drag = null;
+
+    grid.addEventListener('pointerdown', e => {
+        const handle = e.target.closest('.drag-handle');
+        if (!handle) return;
+        const card = handle.closest('.result-card');
+        if (!card) return;
+        e.preventDefault();
+
+        const rect = card.getBoundingClientRect();
+        const ghost = card.cloneNode(true);
+        ghost.className = 'drag-ghost';
+        ghost.style.width  = rect.width + 'px';
+        ghost.style.height = rect.height + 'px';
+        ghost.style.left   = rect.left + 'px';
+        ghost.style.top    = rect.top + 'px';
+        document.body.appendChild(ghost);
+        card.classList.add('drag-source');
+
+        drag = { tz: card.dataset.tz, card, ghost,
+                 ox: e.clientX - rect.left, oy: e.clientY - rect.top };
+    });
+
+    document.addEventListener('pointermove', e => {
+        if (!drag) return;
+        drag.ghost.style.left = (e.clientX - drag.ox) + 'px';
+        drag.ghost.style.top  = (e.clientY - drag.oy) + 'px';
+        const under = document.elementFromPoint(e.clientX, e.clientY)?.closest('.result-card');
+        grid.querySelectorAll('.drag-over').forEach(c => c.classList.remove('drag-over'));
+        if (under && under !== drag.card) under.classList.add('drag-over');
+    });
+
+    const endDrag = e => {
+        if (!drag) return;
+        const under = document.elementFromPoint(e.clientX, e.clientY)?.closest('.result-card');
+        if (under && under !== drag.card && under.dataset.tz) {
+            const fi = state.targets.indexOf(drag.tz);
+            const ti = state.targets.indexOf(under.dataset.tz);
+            if (fi >= 0 && ti >= 0) {
+                state.targets.splice(fi, 1);
+                state.targets.splice(ti, 0, drag.tz);
+                saveTargets();
+                renderResultCards();
+                convert();
+            }
+        }
+        drag.ghost.remove();
+        drag.card.classList.remove('drag-source');
+        grid.querySelectorAll('.drag-over').forEach(c => c.classList.remove('drag-over'));
+        drag = null;
+    };
+    document.addEventListener('pointerup', endDrag);
+    document.addEventListener('pointercancel', endDrag);
+
+    // ── Country picker ───────────────────────────────────────────────────────
+    const pickerModal   = document.getElementById('country-picker-modal');
+    const pickerSearch  = document.getElementById('picker-search');
+
+    const openPicker = () => {
+        pickerSearch.value = '';
+        renderPicker('');
+        pickerModal.classList.add('open');
+        setTimeout(() => pickerSearch.focus(), 60);
+    };
+    const closePicker = () => {
+        pickerModal.classList.remove('open');
+        pickerSearch.value = '';
+    };
+
+    document.getElementById('btn-add-destinations').addEventListener('click', openPicker);
+    document.getElementById('picker-close').addEventListener('click', closePicker);
+    pickerModal.addEventListener('click', e => { if (e.target === pickerModal) closePicker(); });
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && pickerModal.classList.contains('open')) closePicker();
+    });
+
+    pickerSearch.addEventListener('input', e => renderPicker(e.target.value));
+
+    // Toggle a destination on/off
+    document.getElementById('picker-list').addEventListener('change', e => {
+        const cb = e.target;
+        if (cb.type !== 'checkbox') return;
+        const tz = cb.dataset.tz;
+        if (cb.checked) {
+            if (!state.targets.includes(tz)) state.targets.push(tz);
+        } else {
+            if (state.targets.length <= 1) { cb.checked = true; return; } // min 1
+            state.targets = state.targets.filter(t => t !== tz);
+        }
+        saveTargets();
+        renderResultCards();
+        convert();
     });
 
     // ── Share button ─────────────────────────────────────────────────────────
