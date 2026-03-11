@@ -56,7 +56,7 @@ export function renderPicker(query = '') {
         const items = AVAILABLE_TARGETS.filter(t => {
             if (t.region !== region) return false;
             if (!q) return true;
-            return (t.country + ' ' + t.city + ' ' + t.tz + ' ' + t.flag + ' ' + t.region)
+            return (t.country + ' ' + t.city + ' ' + t.tz + ' ' + t.flag + ' ' + t.region + ' ' + (t.aliases ?? ''))
                 .toLowerCase().includes(q);
         });
         if (items.length === 0) return '';
@@ -67,8 +67,8 @@ export function renderPicker(query = '') {
                            ${state.targets.includes(meta.tz) ? 'checked' : ''}>
                     <span class="picker-flag">${meta.flag}</span>
                     <span class="picker-info">
-                        <span class="picker-country">${meta.country}</span>
-                        <span class="picker-city">${meta.city}</span>
+                        <span class="picker-primary">${meta.city}</span>
+                        <span class="picker-secondary">${meta.country}</span>
                     </span>
                 </label>`).join('');
     }).join('');
