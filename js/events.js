@@ -140,6 +140,8 @@ export function bindEvents() {
             state.use24h = btn.dataset.fmt === '24';
             btn12h.classList.toggle('active', !state.use24h);
             btn24h.classList.toggle('active',  state.use24h);
+            btn12h.setAttribute('aria-pressed', String(!state.use24h));
+            btn24h.setAttribute('aria-pressed', String(state.use24h));
             convert();
             saveDefaults();
         })

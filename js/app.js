@@ -40,6 +40,8 @@ if (!fromURL) {
 
 btn12h.classList.toggle('active', !state.use24h);
 btn24h.classList.toggle('active',  state.use24h);
+btn12h.setAttribute('aria-pressed', String(!state.use24h));
+btn24h.setAttribute('aria-pressed', String(state.use24h));
 tzInput.value = cbDisplayText(state.selectedTZ);
 sizeTzInput();
 renderResultCards();
