@@ -19,8 +19,6 @@ export function bindEvents() {
     const btn24h   = document.getElementById('btn-24h');
     const tzCombobox = document.getElementById('tz-combobox');
     const tzInput    = document.getElementById('tz-input');
-    const navToggle  = document.getElementById('nav-toggle');
-    const mainNav    = document.getElementById('main-nav');
 
     // ── Combobox events ──────────────────────────────────────────────────────
     tzInput.addEventListener('focus', () => {
@@ -288,28 +286,5 @@ export function bindEvents() {
         }, 950);
     });
 
-    // ── Mobile nav hamburger ─────────────────────────────────────────────────
-    navToggle.addEventListener('click', e => {
-        e.stopPropagation();
-        const open = mainNav.classList.toggle('open');
-        navToggle.setAttribute('aria-expanded', open);
-    });
-
-    // Close when tapping outside
-    document.addEventListener('click', e => {
-        if (mainNav.classList.contains('open') &&
-            !mainNav.contains(e.target) &&
-            !navToggle.contains(e.target)) {
-            mainNav.classList.remove('open');
-            navToggle.setAttribute('aria-expanded', 'false');
-        }
-    });
-
-    // Close when a nav link is followed
-    mainNav.querySelectorAll('a').forEach(a =>
-        a.addEventListener('click', () => {
-            mainNav.classList.remove('open');
-            navToggle.setAttribute('aria-expanded', 'false');
-        })
-    );
+    // Mobile nav collapse is handled by the Neorgon Header Kit (neorgon-header.js)
 }
