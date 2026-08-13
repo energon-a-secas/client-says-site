@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-Frame-Options" content="DENY">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://cdn.neorgon.org; frame-ancestors 'none'">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://cdn.neorgon.org; img-src 'self' data: blob: https://cdn.neorgon.org">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -221,12 +220,6 @@
         }
 
         /* ── Footer ───────────────────────────────────────────────────────── */
-        .info-footer {
-            text-align: center; padding: 20px 24px 28px;
-            color: rgba(255,255,255,.22); font-size: .78em; line-height: 1.8;
-            border-top: 1px solid rgba(255,255,255,.05);
-            margin-top: 48px;
-        }
 
         /* ── Focus rings (keyboard accessibility) ── */
         :focus-visible {
@@ -255,6 +248,8 @@
 <link rel="stylesheet" href="../css/neorgon-themes.css">
 <link rel="stylesheet" href="https://cdn.neorgon.org/v1.0.0/header/season.css">
 <script defer src="../js/neorgon-header.js"></script>
+<link rel="stylesheet" href="../css/neorgon-footer.css">
+<script defer src="../js/neorgon-footer.js"></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -327,8 +322,8 @@
 
 </main>
 
-<footer class="info-footer">
-    Painfully accurate · No executives were harmed in the making of this page
+<footer class="neo-footer" data-footer-mode="minimal">
+  Painfully accurate · No executives were harmed in the making of this page
 </footer>
 
 <script>
