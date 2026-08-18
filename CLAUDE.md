@@ -9,29 +9,29 @@ make serve      # Start dev server at http://localhost:8803
 make kill       # Stop the server
 ```
 
-The timezone converter (`index.html`) uses ES modules and requires an HTTP server — `file://` won't work. The jargon page (`jargon/index.html`) is a self-contained single file and can be opened directly.
+The timezone converter (`index.html`) uses ES modules and requires an HTTP server, `file://` won't work. The jargon page (`jargon/index.html`) is a self-contained single file and can be opened directly.
 
 ## Architecture
 
 This repo holds two independent tools under the same domain (`clientsays.neorgon.com`):
 
-**1. Timezone Converter** — `index.html` + `css/style.css` + `js/*.js` (modular ES modules)
+**1. Timezone Converter**: `index.html` + `css/style.css` + `js/*.js` (modular ES modules)
 
-**2. Jargon Translator ("Decoded")** — `jargon/index.html` (fully self-contained single file; all CSS, JS, and data inline)
+**2. Jargon Translator ("Decoded")**: `jargon/index.html` (fully self-contained single file; all CSS, JS, and data inline)
 
 `jargon.html` at the root is just a redirect to `jargon/`.
 
 ---
 
-### Timezone Converter — Module Responsibilities
+### Timezone Converter: Module Responsibilities
 
 | Module | Role |
 |---|---|
 | `js/state.js` | Mutable `state` object (`selectedTZ`, `use24h`, `savedTimer`); all static data: `TZ_GROUPS`, `TZ_ALIASES`, `TZ_FLAT`, `TARGETS`, `LS_KEY` |
-| `js/render.js` | `convert()` — core conversion logic; combobox open/close/render/select; `saveDefaults()` / `loadSaved()` / `loadFromURL()` |
+| `js/render.js` | `convert()`: core conversion logic; combobox open/close/render/select; `saveDefaults()` / `loadSaved()` / `loadFromURL()` |
 | `js/events.js` | All DOM event listeners via `bindEvents()` |
 | `js/utils.js` | `getH12()`, `getMin()`, `getAmpm()`, `tzOffsetMin()`, `buildShareURL()`, `showToast()`, `flashBtn()`, `hl()` |
-| `js/app.js` | Entry point only — reads URL params or localStorage, seeds DOM inputs, calls `convert()` and `bindEvents()` |
+| `js/app.js` | Entry point only: reads URL params or localStorage, seeds DOM inputs, calls `convert()` and `bindEvents()` |
 
 ### State initialisation priority
 
@@ -43,13 +43,13 @@ Uses today's date as the calendar anchor (DST-safe). Constructs a UTC `Date` fro
 
 ### Timezone combobox
 
-State lives in `cb` object (exported from `render.js`): `{ open, active, filtered, query }`. `TZ_FLAT` is pre-computed at module load — each entry has `{ id, label, abbr, group, search }` where `search` concatenates the IANA id, label, live abbreviation, and all alias strings from `TZ_ALIASES`. Filtering is a simple `String.includes()` on that pre-built search string.
+State lives in `cb` object (exported from `render.js`): `{ open, active, filtered, query }`. `TZ_FLAT` is pre-computed at module load. Each entry has `{ id, label, abbr, group, search }` where `search` concatenates the IANA id, label, live abbreviation, and all alias strings from `TZ_ALIASES`. Filtering is a simple `String.includes()` on that pre-built search string.
 
 The input auto-sizes itself to its content using a hidden `#tz-sizer` span.
 
 ### Jargon Translator
 
-All data is a hardcoded `PHRASES` array in the script block (`~110 entries`). Filter state is two module-level variables: `activeFilter` (category slug) and `searchQuery`. Both trigger a full `render()` on every change — no virtual DOM, just `innerHTML` replacement on `#phrase-list`.
+All data is a hardcoded `PHRASES` array in the script block (`~110 entries`). Filter state is two module-level variables: `activeFilter` (category slug) and `searchQuery`. Both trigger a full `render()` on every change. No virtual DOM, just `innerHTML` replacement on `#phrase-list`.
 
 ---
 
@@ -65,6 +65,6 @@ All data is a hardcoded `PHRASES` array in the script block (`~110 entries`). Fi
 
 ## Known CSS Gotchas
 
-- `backdrop-filter` on `.card` creates a stacking context — dropdowns that overlap it need `position: relative; z-index: 10` on the input card.
-- `body { display: flex; flex-direction: column }` + `margin: 0 auto` on a child collapses its width — pair with explicit `width: 100%`.
+- `backdrop-filter` on `.card` creates a stacking context: dropdowns that overlap it need `position: relative; z-index: 10` on the input card.
+- `body { display: flex; flex-direction: column }` + `margin: 0 auto` on a child collapses its width: pair with explicit `width: 100%`.
 - The `.tz-combobox` input width is controlled programmatically via `sizeTzInput()` when closed, and reverts to CSS when open (the `.open` class removes the inline width).
