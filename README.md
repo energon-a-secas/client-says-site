@@ -28,7 +28,7 @@ Type the time your client mentioned and get it in your timezone instantly. DST-a
 
 ---
 
-A two-page tool for remote teams. Type the time your client mentioned and instantly see it in Chile, Colombia, and Mexico — Daylight Saving Time handled automatically. The second page translates corporate jargon into plain English.
+A two-page tool for remote teams. Type the time your client mentioned and instantly see it in Chile, Colombia, and Mexico, Daylight Saving Time handled automatically. The second page translates corporate jargon into plain English.
 
 **Live:** [clientsays.neorgon.com](https://clientsays.neorgon.com/) · runs entirely in the browser, no build step, no backend.
 
@@ -48,14 +48,14 @@ Enter the time and timezone a client used (e.g. *"3 PM ET"*) and the page conver
 
 ## Features
 
-- **Searchable timezone picker** — type to filter by name, city, abbreviation, or alias (see table below). Arrow keys, Enter, and Tab all work.
-- **Abbreviation aliases** — clients say things like "ET" instead of "EST". The search understands both.
-- **Settings remembered** — your last-used time and timezone are saved in `localStorage` and restored on the next visit.
-- **Share link** — copies a URL with the current selection encoded as query params, so anyone opening it sees the same conversion.
-- **Copy per card** — clipboard button on each result card.
-- **Now button** — resets the inputs to your current local time in one click.
-- **12h / 24h toggle** — switch output format across all three cards.
-- **DST-aware** — uses the browser's built-in IANA timezone database, so offsets are always correct for today's date.
+- **Searchable timezone picker**: type to filter by name, city, abbreviation, or alias (see table below). Arrow keys, Enter, and Tab all work.
+- **Abbreviation aliases**: clients say things like "ET" instead of "EST". The search understands both.
+- **Settings remembered**: your last-used time and timezone are saved in `localStorage` and restored on the next visit.
+- **Share link**: copies a URL with the current selection encoded as query params, so anyone opening it sees the same conversion.
+- **Copy per card**: clipboard button on each result card.
+- **Now button**: resets the inputs to your current local time in one click.
+- **12h / 24h toggle**: switch output format across all three cards.
+- **DST-aware**: uses the browser's built-in IANA timezone database, so offsets are always correct for today's date.
 
 ---
 
@@ -121,7 +121,7 @@ python3 -m http.server 8080
 # open http://localhost:8080
 ```
 
-Or just open `index.html` directly in a browser — no dependencies, no install.
+Or just open `index.html` directly in a browser: no dependencies, no install.
 
 ---
 
