@@ -12,24 +12,23 @@
     <meta name="neo-mark" content="on">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <title>Decoded: Corporate Jargon Translator</title>
-    <meta name="description" content="Look up corporate buzzword bingo and get the plain-English translation. Searchable, fast, no account needed">
+    <title>Decoded | Corporate Jargon Translator</title>
+    <meta name="description" content="Look up a corporate phrase and read what it really means. Searchable by role, no account">
     <meta property="og:title" content="Decoded: Corporate Jargon Translator">
-    <meta property="og:description" content="Plain-English translations for corporate buzzword bingo. Search the full dictionary instantly">
+    <meta property="og:description" content="What they said, and what they meant. Search by role, no account">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://clientsays.neorgon.com/jargon/">
     <meta property="og:site_name" content="Neorgon">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Decoded: Corporate Jargon Translator">
-    <meta name="twitter:description" content="Plain-English translations for corporate buzzword bingo. Search the full dictionary instantly">
+    <meta name="twitter:description" content="What they said, and what they meant. Search by role, no account">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://clientsays.neorgon.com/jargon/">
     <meta property="og:locale" content="en_US">
     <meta name="theme-color" content="#040714">
-    <!-- og:image: uncomment when social preview image is ready (1200x630 PNG)
-    <meta property="og:image" content="https://clientsays.neorgon.com/og-preview.png">
+    <meta property="og:image" content="https://clientsays.neorgon.com/og-preview.jpg">
     <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630"> -->
+    <meta property="og:image:height" content="630">
     <style>
         /* ── Reset & base ─────────────────────────────────────────────────── */
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -258,13 +257,13 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Decoded — Corporate Jargon Translator",
+  "name": "Decoded | Corporate Jargon Translator",
   "description": "A searchable dictionary of corporate jargon with plain-English translations",
-  "url": "https://ehq.cl/jargon",
+  "url": "https://clientsays.neorgon.com/jargon/",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-  "author": { "@type": "Organization", "name": "Energon", "url": "https://ehq.cl/" }
+  "author": { "@type": "Organization", "name": "Neorgon", "url": "https://neorgon.com/" }
 }
 </script>
 </head>
@@ -307,7 +306,7 @@
 
     <div class="intro-card">
         <span class="intro-label">Decoded</span>
-        <div class="intro-quote" id="intro-quote">"we need to be more intentional about this"</div>
+        <div class="intro-quote" id="intro-quote">&ldquo;we need to be more intentional about this&rdquo;</div>
 
         <div class="search-wrap">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -472,20 +471,20 @@ const PHRASES = [
 ];
 
 const INTROS = [
-    '"we need to be more intentional about this"',
-    '"let\'s circle back on that"',
-    '"can you add some color to that?"',
-    '"we need to move the needle"',
-    '"let\'s make sure we\'re aligned"',
-    '"we should socialize this idea"',
-    '"i just want to double-click on that"',
-    '"we\'re being very data-driven here"',
-    '"how are we doing team?"',
-    '"any blockers?"',
-    '"let\'s keep it time-boxed"',
-    '"we had some spillover from last sprint"',
-    '"can we do a quick retro on that?"',
-    '"is this a 3 or a 5?"',
+    '\u201cwe need to be more intentional about this\u201d',
+    '\u201clet\'s circle back on that\u201d',
+    '\u201ccan you add some color to that?\u201d',
+    '\u201cwe need to move the needle\u201d',
+    '\u201clet\'s make sure we\'re aligned\u201d',
+    '\u201cwe should socialize this idea\u201d',
+    '\u201ci just want to double-click on that\u201d',
+    '\u201cwe\'re being very data-driven here\u201d',
+    '\u201chow are we doing team?\u201d',
+    '\u201cany blockers?\u201d',
+    '\u201clet\'s keep it time-boxed\u201d',
+    '\u201cwe had some spillover from last sprint\u201d',
+    '\u201ccan we do a quick retro on that?\u201d',
+    '\u201cis this a 3 or a 5?\u201d',
 ];
 document.getElementById('intro-quote').textContent =
     INTROS[Math.floor(Math.random() * INTROS.length)];

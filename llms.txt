@@ -1,6 +1,6 @@
 # Client Says
 
-> Timezone converter and jargon translator
+> Converts a client's meeting time into your team's timezones, and decodes corporate jargon
 
 - Live: https://clientsays.neorgon.com/
 - Part of the Neorgon tool suite (free, no signup, runs in your browser): https://neorgon.com/

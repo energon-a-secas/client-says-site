@@ -155,7 +155,7 @@ export function bindEvents() {
             btn.classList.add('copied');
             flashBtn(btn, CHECK_SVG);
             setTimeout(() => btn.classList.remove('copied'), 1800);
-            showToast('Time copied!');
+            showToast('Time copied');
         });
     });
 
@@ -261,9 +261,8 @@ export function bindEvents() {
         navigator.clipboard?.writeText(buildShareURL(state)).then(() => {
             btnShare.classList.add('copied');
             flashBtn(btnShare,
-                `${CHECK_SVG} <span>Link copied!</span>`, 2000);
+                `${CHECK_SVG} <span>Link copied</span>`, 2000);
             setTimeout(() => btnShare.classList.remove('copied'), 2000);
-            showToast('Share link copied!');
         });
     });
 

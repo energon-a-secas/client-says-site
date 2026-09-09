@@ -27,8 +27,8 @@ This repo holds two independent tools under the same domain (`clientsays.neorgon
 
 | Module | Role |
 |---|---|
-| `js/state.js` | Mutable `state` object (`selectedTZ`, `use24h`, `savedTimer`); all static data: `TZ_GROUPS`, `TZ_ALIASES`, `TZ_FLAT`, `TARGETS`, `LS_KEY` |
-| `js/render.js` | `convert()`: core conversion logic; combobox open/close/render/select; `saveDefaults()` / `loadSaved()` / `loadFromURL()` |
+| `js/state.js` | Mutable `state` object (`selectedTZ`, `use24h`, `savedTimer`, `targets`); all static data: `TZ_GROUPS` (30 source zones), `TZ_ALIASES`, `TZ_FLAT`, `AVAILABLE_TARGETS` (44 destinations), `LS_KEY`, `LS_KEY_TARGETS` |
+| `js/render.js` | `convert()`: core conversion logic; `renderResultCards()` / `renderPicker()` / `saveTargets()`; combobox open/close/render/select; `saveDefaults()` / `loadSaved()` / `loadFromURL()` |
 | `js/events.js` | All DOM event listeners via `bindEvents()` |
 | `js/utils.js` | `getH12()`, `getMin()`, `getAmpm()`, `tzOffsetMin()`, `buildShareURL()`, `showToast()`, `flashBtn()`, `hl()` |
 | `js/app.js` | Entry point only: reads URL params or localStorage, seeds DOM inputs, calls `convert()` and `bindEvents()` |
@@ -39,7 +39,11 @@ This repo holds two independent tools under the same domain (`clientsays.neorgon
 
 ### Conversion logic (`convert()` in `render.js`)
 
-Uses today's date as the calendar anchor (DST-safe). Constructs a UTC `Date` from the hour/minute/ampm inputs and the source timezone offset (`tzOffsetMin()`), then formats it into each of the three fixed targets (`America/Santiago`, `America/Bogota`, `America/Mexico_City`) with `Intl.DateTimeFormat`. Day-offset badges compare `sv-SE` locale date strings (gives `YYYY-MM-DD`) between source and target.
+Uses today's date as the calendar anchor, so the offset is right for today and **not** for a meeting on a future date across a DST switch. Do not write copy that promises otherwise. Constructs a UTC `Date` from the hour/minute/ampm inputs and the source timezone offset (`tzOffsetMin()`), then formats it into each timezone in `state.targets` with `Intl.DateTimeFormat`. Day-offset badges compare `sv-SE` locale date strings (gives `YYYY-MM-DD`) between source and target.
+
+### Destinations
+
+`state.targets` is a user-editable array of IANA ids, seeded from `localStorage` key `clientsays-targets-v1` and defaulting to `['America/Santiago', 'America/Bogota', 'America/Mexico_City']`. The picker modal lists all 44 entries of `AVAILABLE_TARGETS` grouped by `region`; checking one pushes it, unchecking removes it (minimum 1). Cards are rendered from `state.targets` by `renderResultCards()` and reordered by pointer drag in `events.js`, and both paths call `saveTargets()`. The share URL (`buildShareURL()`) carries `h m ap tz fmt` only, never the destinations.
 
 ### Timezone combobox
 
@@ -49,7 +53,7 @@ The input auto-sizes itself to its content using a hidden `#tz-sizer` span.
 
 ### Jargon Translator
 
-All data is a hardcoded `PHRASES` array in the script block (`~110 entries`). Filter state is two module-level variables: `activeFilter` (category slug) and `searchQuery`. Both trigger a full `render()` on every change. No virtual DOM, just `innerHTML` replacement on `#phrase-list`.
+All data is a hardcoded `PHRASES` array in the script block (116 entries). Filter state is two module-level variables: `activeFilter` (category slug) and `searchQuery`. Both trigger a full `render()` on every change. No virtual DOM, just `innerHTML` replacement on `#phrase-list`.
 
 ---
 

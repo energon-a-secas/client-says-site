@@ -2,7 +2,7 @@
 
 # Client Says
 
-Type the time your client mentioned and get it in your timezone instantly. DST-aware, shareable links, no install.
+Type the time a client mentioned and see it in the timezones you work with. DST applied for today's date, shareable link, no install.
 
 [![Live][badge-site]][url-site]
 [![HTML5][badge-html]][url-html]
@@ -28,7 +28,7 @@ Type the time your client mentioned and get it in your timezone instantly. DST-a
 
 ---
 
-A two-page tool for remote teams. Type the time your client mentioned and instantly see it in Chile, Colombia, and Mexico, Daylight Saving Time handled automatically. The second page translates corporate jargon into plain English.
+A two-page tool for remote teams. Type the time a client mentioned and see it in the places you work with, Chile, Colombia and Mexico by default, with DST applied for today's date. The second page translates corporate jargon into what it actually means.
 
 **Live:** [clientsays.neorgon.com](https://clientsays.neorgon.com/) · runs entirely in the browser, no build step, no backend.
 
@@ -36,13 +36,7 @@ A two-page tool for remote teams. Type the time your client mentioned and instan
 
 ## What it does
 
-Enter the time and timezone a client used (e.g. *"3 PM ET"*) and the page converts it to:
-
-| Target | Timezone |
-|--------|----------|
-| 🇨🇱 Chile | `America/Santiago` |
-| 🇨🇴 Colombia | `America/Bogota` |
-| 🇲🇽 Mexico | `America/Mexico_City` |
+Enter the time and timezone a client used (say *"3 PM ET"*) and the page shows it in every destination you have picked. Out of the box that is Chile (`America/Santiago`), Colombia (`America/Bogota`) and Mexico (`America/Mexico_City`). **Edit destinations** opens a searchable list of 44 places, cards drag to reorder, and the list is kept in this browser.
 
 ---
 
@@ -50,11 +44,14 @@ Enter the time and timezone a client used (e.g. *"3 PM ET"*) and the page conver
 
 - **Searchable timezone picker**: type to filter by name, city, abbreviation, or alias (see table below). Arrow keys, Enter, and Tab all work.
 - **Abbreviation aliases**: clients say things like "ET" instead of "EST". The search understands both.
-- **Settings remembered**: your last-used time and timezone are saved in `localStorage` and restored on the next visit.
-- **Share link**: copies a URL with the current selection encoded as query params, so anyone opening it sees the same conversion.
+- **Pick destinations**: 44 places, searched by country, city or timezone id, dragged into the order you want.
+- **Day badge**: each card says same day, next day or previous day, so a 9 PM call does not land on the wrong date.
+- **Settings remembered**: your last time, timezone, 12h/24h choice and destination list are saved in `localStorage` and restored on the next visit.
+- **Share link**: copies a URL with the time, AM/PM, source timezone and format as query params. Destinations are not in the link, so whoever opens it sees their own.
 - **Copy per card**: clipboard button on each result card.
 - **Now button**: resets the inputs to your current local time in one click.
-- **12h / 24h toggle**: switch output format across all three cards.
+- **Hour stepper and A/P keys**: the arrows either side of the hour nudge it up or down, and with the AM/PM button focused, `A` and `P` set it directly.
+- **12h / 24h toggle**: switch output format on every card.
 - **DST-aware**: uses the browser's built-in IANA timezone database, so offsets are always correct for today's date.
 
 ---
@@ -108,7 +105,7 @@ client-says-site/
 │   ├── events.js       # Search, share, copy, now button
 │   └── utils.js        # Helpers
 └── jargon/
-    └── index.html      # Jargon translator — single file
+    └── index.html      # Jargon translator, single file
 ```
 
 ---
@@ -116,12 +113,10 @@ client-says-site/
 ## Running locally
 
 ```bash
-cd client-says-site
-python3 -m http.server 8080
-# open http://localhost:8080
+make serve   # http://localhost:8803
 ```
 
-Or just open `index.html` directly in a browser: no dependencies, no install.
+The converter uses ES modules, so it needs an HTTP server. The jargon page is one self-contained file and opens directly.
 
 ---
 
