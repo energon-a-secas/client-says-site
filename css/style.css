@@ -498,7 +498,7 @@ nav a.active { background: rgba(233, 30, 120, 0.28); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition: none !important; }
 }
 :root {
   --neo-footer-bg: rgba(255, 255, 255, 0.03);
