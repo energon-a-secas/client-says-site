@@ -7,8 +7,8 @@
  *
  *   node tests/browser.mjs [chromium,firefox,webkit]
  *
- * The page's CSP allows the frame from https://neorgon.com and
- * http://localhost:8800 only, so the frame on 9381 is reached with bypassCSP
+ * The page's CSP allows the frame from https://neorgon.com and any
+ * http://localhost port, so the frame on 9381 is reached through the real CSP
  * (a separate check reads the CSP itself). Playwright turns Chromium's storage
  * partitioning off and sets Firefox's cookieBehavior to 4; both are put back to
  * the browsers' defaults here, or the sharing check passes for the wrong reason.
@@ -106,7 +106,7 @@ const smallTargets = (page, scope) => page.evaluate((scope) => {
 
 for (const eng of engines) {
   const browser = await launch(eng)
-  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, bypassCSP: true })
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } })
   const errors = []
   const requests = []
   ctx.on('request', (r) => requests.push(r.url()))
@@ -226,7 +226,7 @@ for (const eng of engines) {
 
     // 10. The CSP names the frame; no request carries an answer.
     const csp = await page.evaluate(() => document.querySelector('meta[http-equiv="Content-Security-Policy"]').content)
-    check(eng, 'CSP frame-src allows neorgon.com and the local default', /frame-src https:\/\/neorgon\.com http:\/\/localhost:8800(;|$)/.test(csp))
+    check(eng, 'CSP frame-src allows neorgon.com and any local port', /frame-src https:\/\/neorgon\.com http:\/\/localhost:\*(;|$)/.test(csp))
     check(eng, 'no request carries neo-ws=', !requests.some((u) => /neo-ws=/.test(u)))
 
     // 11. A phone: every control 44px.

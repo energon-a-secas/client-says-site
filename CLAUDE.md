@@ -48,7 +48,7 @@ The contract is `docs/plans/2026-11-03-neorgon-workspace.md` in the monorepo; th
 
 - **Settings** (`neo_me`): the home zone (default source zone, and the "Your zone" line on that destination's card) and the time format.
 - **The team**: "Add my team's zones" (the sheet's use action) adds the distinct zones of your team (the first team your `me.person` is in, else the first team) as cards; the section offers any other team or everyone. Zones not in `AVAILABLE_TARGETS` (another IANA zone, an offset) and people with no zone are listed in `#team-note`, never dropped. The team last used is `clientsays-team-v1` (`'*'` for everyone); its people show as faces on the cards with the kit's `colorFor` / `inkOn` / `initials`.
-- The CSP's `frame-src` is `https://neorgon.com http://localhost:8800`. The browser test reaches its frame on 9381 with Playwright's `bypassCSP` and checks the CSP string separately.
+- The CSP's `frame-src` is `https://neorgon.com http://localhost:*` (any local port, the plan's Floorplan amendment: the client honours `localStorage['neo-ws:dev-origin']`, and with only `:8800` a frame on any other port was refused silently, so Settings said "No workspace yet" with a full workspace saved). The client frames localhost only when the page itself is served from localhost. The browser test runs against the real CSP.
 
 ### Conversion logic (`convert()` in `render.js`)
 
