@@ -258,6 +258,48 @@ for (const eng of engines) {
         await page.keyboard.press('Escape')
       }
     }
+
+    // 12. Analytics on the production host (Chromium): no beacon runs while the address holds a pick's answer.
+    // On localhost the Header Kit starts no analytics, so this serves the page as clientsays.neorgon.com from disk.
+    if (eng === 'chromium') {
+      const prod = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+      const local = (base) => async (route) => {
+        const u = new URL(route.request().url())
+        try {
+          const res = await fetch(base + u.pathname + u.search)
+          await route.fulfill({ status: res.status, headers: { 'content-type': res.headers.get('content-type') || 'text/html' }, body: Buffer.from(await res.arrayBuffer()) })
+        } catch { await route.abort().catch(() => {}) }   // a server stopped, or the page already gone
+      }
+      await prod.route(/^https:\/\/clientsays\.neorgon\.com\//, local(TOOL.replace(/\/$/, '')))
+      await prod.route(/^https:\/\/(www\.)?neorgon\.com\//, local(FRAME))
+      await prod.route(/^https:\/\/(cdn\.neorgon\.org|clerk\.neorgon\.com|challenges\.cloudflare\.com)\//, (route) => route.fulfill({ status: 200, body: '' }))
+      await prod.addInitScript(() => {
+        window.__beacons = []
+        const append = Node.prototype.appendChild
+        Node.prototype.appendChild = function (el) {
+          if (el && el.tagName === 'SCRIPT' && /goatcounter|zgo\.at|cloudflareinsights/.test(el.src || '')) {
+            const note = () => window.__beacons.push(location.href)
+            el.addEventListener('load', note); el.addEventListener('error', note)
+          }
+          return append.call(this, el)
+        }
+      })
+      const sent = []
+      prod.on('request', (r) => { if (/zgo\.at|goatcounter|cloudflareinsights/.test(r.url())) sent.push(r.url()) })
+      await prod.route(/zgo\.at|goatcounter\.com|cloudflareinsights\.com/, (route) => setTimeout(() => route.abort(), 50))
+      const page = await prod.newPage()
+      await page.goto('https://clientsays.neorgon.com/')
+      await page.evaluate(() => sessionStorage.setItem('neo-ws:return-hash', JSON.stringify({ h: '', t: Date.now(), k: 'pick' })))
+      const payload = await W.encodePayload(W.normalizeWorkspace({ people: [{ id: 'zed', name: 'Zed Answer' }] }).ws)
+      await page.goto('about:blank')
+      await page.goto(W.answerLink('https://clientsays.neorgon.com/', { payload, stamp: W.makeStamp() }, { selfHostname: 'neorgon.com' }))
+      await page.waitForTimeout(2000)
+      const runs = await page.evaluate(() => window.__beacons)
+      const cached = await page.evaluate(() => localStorage.getItem('neo-ws:cache') || '')
+      check(eng, 'production host: analytics run and the answer is taken', runs.length > 0 && !page.url().includes('neo-ws=') && cached.includes('Zed Answer'), JSON.stringify(runs))
+      check(eng, 'production host: no beacon runs or sends while the address carries neo-ws=', runs.every((h) => !h.includes('neo-ws=')) && sent.every((u) => !u.includes('neo-ws=')), JSON.stringify(runs))
+      await prod.close()
+    }
     check(eng, 'no page errors', errors.length === 0, JSON.stringify(errors.slice(0, 4)))
   } catch (err) {
     check(eng, 'run', false, String(err && err.stack || err))
