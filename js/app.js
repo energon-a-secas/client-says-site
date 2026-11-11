@@ -1,14 +1,17 @@
-// ── app.js — Entry point ─────────────────────────────────────────────────────
+// ── app.js: entry point ─────────────────────────────────────────────────────
 
 import { state, QUOTES, TZ_FLAT } from './state.js';
 import { cbDisplayText, sizeTzInput, convert, loadSaved, loadFromURL, renderResultCards } from './render.js';
-import { bindEvents } from './events.js';
+import { bindEvents, openPicker } from './events.js';
+import { startWorkspace, prefs } from './team.js';
+import { prefers24h } from './model.js';
 
-// ── Randomised quote ─────────────────────────────────────────────────────────
+// The Workspace client first: it reads (and strips) a pick's answer from the address bar.
+startWorkspace({ onOpenPicker: openPicker });
+
 document.getElementById('client-quote').textContent =
-    '\u201c' + QUOTES[Math.floor(Math.random() * QUOTES.length)] + '\u201d';
+    '“' + QUOTES[Math.floor(Math.random() * QUOTES.length)] + '”';
 
-// ── Init ─────────────────────────────────────────────────────────────────────
 const inpHour = document.getElementById('inp-hour');
 const inpMin  = document.getElementById('inp-min');
 const btnAmpm = document.getElementById('inp-ampm');
@@ -16,26 +19,17 @@ const btn12h  = document.getElementById('btn-12h');
 const btn24h  = document.getElementById('btn-24h');
 const tzInput = document.getElementById('tz-input');
 
-// Priority: URL params > localStorage > local time / local TZ
-const fromURL = loadFromURL();
-if (!fromURL) {
-    const saved = loadSaved();
-    if (saved) {
-        if (saved.hour)   inpHour.value       = saved.hour;
-        if (saved.minute) inpMin.value        = saved.minute;
-        if (saved.ampm)   btnAmpm.textContent = saved.ampm;
-        if (saved.fmt)    state.use24h = saved.fmt === '24';
-        if (saved.tz && TZ_FLAT.find(o => o.id === saved.tz)) state.selectedTZ = saved.tz;
-    } else {
-        // Default: current local time + detected timezone
-        const n   = new Date();
-        const h24 = n.getHours();
-        inpHour.value       = String(h24 % 12 || 12);
-        inpMin.value        = String(n.getMinutes()).padStart(2, '0');
-        btnAmpm.textContent = h24 < 12 ? 'AM' : 'PM';
-        const localTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        if (TZ_FLAT.find(o => o.id === localTZ)) state.selectedTZ = localTZ;
-    }
+// Priority: the share link > this browser's last values > your settings (neo_me) > the device.
+const deviceCycle = (() => { try { return Intl.DateTimeFormat(undefined, { hour: 'numeric' }).resolvedOptions().hourCycle || ''; } catch { return ''; } })();
+if (!loadFromURL()) {
+    const saved = loadSaved() || {};
+    const n = new Date();
+    inpHour.value       = saved.hour   || String(n.getHours() % 12 || 12);
+    inpMin.value        = saved.minute || String(n.getMinutes()).padStart(2, '0');
+    btnAmpm.textContent = saved.ampm   || (n.getHours() < 12 ? 'AM' : 'PM');
+    state.use24h = saved.fmt ? saved.fmt === '24' : prefers24h(prefs(), deviceCycle);
+    const home = prefs().tz;
+    state.selectedTZ = saved.tz || (TZ_FLAT.some(o => o.id === home) ? home : state.selectedTZ);
 }
 
 btn12h.classList.toggle('active', !state.use24h);
@@ -46,6 +40,4 @@ tzInput.value = cbDisplayText(state.selectedTZ);
 sizeTzInput();
 renderResultCards();
 convert();
-
-// ── Bind all event listeners ─────────────────────────────────────────────────
 bindEvents();

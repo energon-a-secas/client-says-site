@@ -1,7 +1,9 @@
-// ── state.js — Mutable state, timezone data, target definitions ─────────────
+// ── state.js: mutable state, timezone data, target definitions ──────────────
+
+import { cleanTargets } from './model.js';
 
 // ── Available conversion targets (all supported destinations) ────────────────
-// `aliases` is extra search fodder — cities/terms that resolve to this entry
+// `aliases` is extra search fodder: cities/terms that resolve to this entry
 export const AVAILABLE_TARGETS = [
     // ── UTC ──────────────────────────────────────────────────────────────────
     { tz: 'UTC',                            flag: '🌐', country: 'UTC / GMT',     city: 'Universal Time',        region: 'UTC / GMT',      aliases: 'gmt universal zulu z' },
@@ -59,13 +61,13 @@ export const AVAILABLE_TARGETS = [
 ];
 
 export const LS_KEY_TARGETS = 'clientsays-targets-v1';
+export const LS_KEY_TEAM    = 'clientsays-team-v1';   // the workspace team whose zones were added last ('*' = everyone)
 
+// Stored destinations are read back through cleanTargets: known zones only.
 function _loadSavedTargets() {
-    try {
-        const s = JSON.parse(localStorage.getItem('clientsays-targets-v1'));
-        if (Array.isArray(s) && s.length > 0) return s;
-    } catch {}
-    return ['America/Santiago', 'America/Bogota', 'America/Mexico_City'];
+    let raw = null;
+    try { raw = JSON.parse(localStorage.getItem(LS_KEY_TARGETS)); } catch {}
+    return cleanTargets(raw, AVAILABLE_TARGETS.map(t => t.tz));
 }
 
 // ── Mutable state (exported as object so mutations are shared) ───────────────
@@ -74,6 +76,8 @@ export const state = {
     selectedTZ: 'America/New_York',
     savedTimer: null,
     targets:    _loadSavedTargets(),
+    teamWs:     null,   // the workspace the kit last handed over (normalized), or null
+    teamId:     '',     // which team's faces the cards show; '' until a team's zones were added
 };
 
 // ── Randomised quotes ────────────────────────────────────────────────────────
@@ -138,7 +142,7 @@ export const TZ_GROUPS = [
     ]},
 ];
 
-// Common informal aliases — covers short forms clients actually say
+// Common informal aliases: covers short forms clients actually say
 // (ET/CT/PT, seasonal pairs like EST/EDT, regional nicknames, etc.)
 export const TZ_ALIASES = {
     'America/New_York':               'et est edt eastern east coast ny nyc',

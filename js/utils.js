@@ -1,4 +1,4 @@
-// ── utils.js — Small shared helpers ──────────────────────────────────────────
+// ── utils.js: small shared helpers ──────────────────────────────────────────
 
 // ── SVG templates ────────────────────────────────────────────────────────────
 export const COPY_SVG  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
@@ -25,21 +25,12 @@ export function tzOffsetMin(tz, date) {
     return (utc - loc) / 60000;
 }
 
+/** An offset in tzOffsetMin's minutes as UTC+9, UTC\u22123, UTC+5:30. */
 export function fmtOffset(m) {
     const sign = m <= 0 ? '+' : '\u2212';
-    const a    = Math.abs(m);
-    return `UTC${sign}${String(Math.floor(a / 60)).padStart(2,'0')}:${String(a % 60).padStart(2,'0')}`;
-}
-
-// ── HTML-escape + highlight matched query ────────────────────────────────────
-export function hl(text, q) {
-    const safe = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    if (!q) return safe;
-    const idx = safe.toLowerCase().indexOf(q.toLowerCase());
-    if (idx < 0) return safe;
-    return safe.slice(0, idx)
-        + '<mark>' + safe.slice(idx, idx + q.length) + '</mark>'
-        + safe.slice(idx + q.length);
+    const a    = Math.abs(Math.round(m));
+    const mm   = a % 60;
+    return `UTC${sign}${Math.floor(a / 60)}${mm ? ':' + String(mm).padStart(2, '0') : ''}`;
 }
 
 // ── Toast notification ───────────────────────────────────────────────────────

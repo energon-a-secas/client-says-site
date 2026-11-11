@@ -1,11 +1,11 @@
-// ── events.js — Event handlers, user interactions ────────────────────────────
+// ── events.js: event handlers, user interactions ─────────────────────────────
 
 import { state, TZ_FLAT } from './state.js';
 import { getH12, getMin, getAmpm, flashBtn, buildShareURL, showToast, COPY_SVG, CHECK_SVG } from './utils.js';
 import {
     cb, cbOpen_, cbClose, cbSelect, cbRender, cbMarkActive, cbScrollActive,
     convert, saveDefaults, sizeTzInput,
-    renderResultCards, renderPicker, saveTargets,
+    renderResultCards, renderPicker, saveTargets, placeName,
 } from './render.js';
 
 // ── Bind all event listeners ─────────────────────────────────────────────────
@@ -35,7 +35,7 @@ export function bindEvents() {
         if (!cb.open) {
             cb.open = true;
             document.getElementById('tz-dropdown').style.display = 'block';
-            tzCombobox.setAttribute('aria-expanded', 'true');
+            tzInput.setAttribute('aria-expanded', 'true');
             tzCombobox.classList.add('open');
         }
         cbRender();
@@ -105,7 +105,7 @@ export function bindEvents() {
         convert();
     });
 
-    // ── AM/PM toggle — click, Space/Enter, or press A / P ────────────────────
+    // ── AM/PM toggle: click, Space/Enter, or press A / P ────────────────────
     btnAmpm.addEventListener('click', () => {
         btnAmpm.textContent = getAmpm() === 'AM' ? 'PM' : 'AM';
         convert(); saveDefaults();
@@ -145,7 +145,7 @@ export function bindEvents() {
         })
     );
 
-    // ── Copy result buttons (delegated — cards are rendered dynamically) ────────
+    // ── Copy result buttons (delegated: cards are rendered dynamically) ────────
     document.getElementById('results-grid').addEventListener('click', e => {
         const btn = e.target.closest('.copy-btn');
         if (!btn) return;
@@ -159,8 +159,22 @@ export function bindEvents() {
         });
     });
 
-    // ── Drag-to-reorder cards ────────────────────────────────────────────────
+    // ── Reorder from the keyboard: arrow keys on a card's handle ─────────────
     const grid = document.getElementById('results-grid');
+    grid.addEventListener('keydown', e => {
+        const handle = e.target.closest('.drag-handle');
+        if (!handle) return;
+        const step = { ArrowLeft: -1, ArrowUp: -1, ArrowRight: 1, ArrowDown: 1 }[e.key];
+        if (!step) return;
+        e.preventDefault();
+        const tz = handle.dataset.tz;
+        if (moveTarget(tz, step)) {
+            grid.querySelector(`.drag-handle[data-tz="${CSS.escape(tz)}"]`)?.focus();
+            showToast(`${placeName(tz)} is now ${state.targets.indexOf(tz) + 1} of ${state.targets.length}`);
+        }
+    });
+
+    // ── Drag-to-reorder cards (pointer) ──────────────────────────────────────
     let drag = null;
 
     grid.addEventListener('pointerdown', e => {
@@ -215,30 +229,25 @@ export function bindEvents() {
     document.addEventListener('pointerup', endDrag);
     document.addEventListener('pointercancel', endDrag);
 
-    // ── Country picker ───────────────────────────────────────────────────────
-    const pickerModal   = document.getElementById('country-picker-modal');
-    const pickerSearch  = document.getElementById('picker-search');
-
-    const openPicker = () => {
-        pickerSearch.value = '';
-        renderPicker('');
-        pickerModal.classList.add('open');
-        setTimeout(() => pickerSearch.focus(), 60);
-    };
-    const closePicker = () => {
-        pickerModal.classList.remove('open');
-        pickerSearch.value = '';
-    };
-
-    document.getElementById('btn-add-destinations').addEventListener('click', openPicker);
-    document.getElementById('picker-close').addEventListener('click', closePicker);
-    pickerModal.addEventListener('click', e => { if (e.target === pickerModal) closePicker(); });
-
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Escape' && pickerModal.classList.contains('open')) closePicker();
+    // ── Destination picker (a native dialog: Escape, focus trap, focus return) ──
+    const pickerModal = document.getElementById('country-picker-modal');
+    document.getElementById('btn-add-destinations').addEventListener('click', e => openPicker(e.currentTarget));
+    document.getElementById('picker-close').addEventListener('click', () => pickerModal.close());
+    // A click on the backdrop lands on the dialog itself.
+    pickerModal.addEventListener('click', e => { if (e.target === pickerModal) pickerModal.close(); });
+    // Escape closes at once, even from a search field that would only clear itself.
+    pickerModal.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { e.preventDefault(); pickerModal.close(); }
     });
-
-    pickerSearch.addEventListener('input', e => renderPicker(e.target.value));
+    pickerModal.addEventListener('close', () => {
+        document.getElementById('picker-search').value = '';
+        const back = pickerOpener && pickerOpener.isConnected ? pickerOpener : document.getElementById('btn-add-destinations');
+        pickerOpener = null;
+        // The close event is queued: focus that has already moved elsewhere stays there.
+        const at = document.activeElement;
+        if (!at || at === document.body || pickerModal.contains(at)) back?.focus();
+    });
+    document.getElementById('picker-search').addEventListener('input', e => renderPicker(e.target.value));
 
     // Toggle a destination on/off
     document.getElementById('picker-list').addEventListener('change', e => {
@@ -286,4 +295,29 @@ export function bindEvents() {
     });
 
     // Mobile nav collapse is handled by the Neorgon Header Kit (neorgon-header.js)
+}
+
+// ── Picker open, shared with the Settings sheet's "Edit destinations" ───────
+let pickerOpener = null;
+export function openPicker(opener = document.activeElement) {
+    const dlg = document.getElementById('country-picker-modal');
+    if (!dlg || dlg.open) return;
+    pickerOpener = opener && opener !== document.body ? opener : null;
+    document.getElementById('picker-search').value = '';
+    renderPicker('');
+    dlg.showModal();
+    document.getElementById('picker-search').focus();
+}
+
+/** Moves a destination one place earlier (-1) or later (+1). False at either end. */
+export function moveTarget(tz, step) {
+    const i = state.targets.indexOf(tz);
+    const j = i + step;
+    if (i < 0 || j < 0 || j >= state.targets.length) return false;
+    state.targets.splice(i, 1);
+    state.targets.splice(j, 0, tz);
+    saveTargets();
+    renderResultCards();
+    convert();
+    return true;
 }

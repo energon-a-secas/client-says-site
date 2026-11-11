@@ -1,23 +1,24 @@
-// ── render.js — DOM rendering, combobox, timezone display ────────────────────
+// ── render.js: DOM rendering, combobox, timezone display ────────────────────
 
 import { state, TZ_FLAT, AVAILABLE_TARGETS, LS_KEY, LS_KEY_TARGETS } from './state.js';
-import { getH12, getMin, getAmpm, tzOffsetMin, hl, COPY_SVG } from './utils.js';
+import { getH12, getMin, getAmpm, tzOffsetMin, fmtOffset, COPY_SVG } from './utils.js';
+import { esc, highlight, cleanTime, timeFromQuery, homeZone, pickTeam, peopleInZone } from './model.js';
+import { colorFor, inkOn, initials, withDefaults, readMe } from './neorgon-workspace-core.js';
 
-// ── Card color palette (cycles for N destinations) ───────────────────────────
-const CARD_COLORS = [
-    ['#0052d6', '#0075ff', '0,82,214'],
-    ['#0063e5', '#0080ff', '0,99,229'],
-    ['#0047ab', '#0068cc', '0,71,171'],
-    ['#005a9e', '#0078d4', '0,90,158'],
-    ['#003d7a', '#005ab5', '0,61,122'],
-    ['#1a3a8a', '#2052cc', '26,58,138'],
-    ['#0d4fa0', '#1568c2', '13,79,160'],
-    ['#01579b', '#0277bd', '1,87,155'],
-];
+const TONES = 4;            // .tone-0 to .tone-3 in style.css: one accent family
+const FACES = 4;            // faces drawn on a card before "+N"
+const TARGET_META = new Map(AVAILABLE_TARGETS.map(t => [t.tz, t]));
+const SOURCE_IDS = TZ_FLAT.map(o => o.id);
 
 // Stable CSS-safe ID from a timezone string
 export function tzToId(tz) {
     return tz.toLowerCase().replace(/\//g, '-').replace(/_/g, '-');
+}
+
+/** The city a destination names ("Tokyo"), for copy. */
+export function placeName(tz) {
+    const meta = TARGET_META.get(tz);
+    return meta ? meta.city.split(' \u00b7 ')[0] : tz;
 }
 
 const DRAG_HANDLE_SVG = `<svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor" aria-hidden="true">
@@ -26,31 +27,95 @@ const DRAG_HANDLE_SVG = `<svg width="10" height="14" viewBox="0 0 10 14" fill="c
     <circle cx="3" cy="12" r="1.3"/><circle cx="7" cy="12" r="1.3"/>
 </svg>`;
 
-// ── Render result cards dynamically from state.targets ───────────────────────
-export function renderResultCards() {
-    const grid = document.getElementById('results-grid');
-    grid.innerHTML = state.targets.map((tz, i) => {
-        const meta = AVAILABLE_TARGETS.find(t => t.tz === tz);
-        if (!meta) return '';
-        const id = tzToId(tz);
-        const [c1, c2, rgb] = CARD_COLORS[i % CARD_COLORS.length];
-        return `<div class="result-card" id="card-${id}" data-tz="${tz}"
-                     style="background:linear-gradient(140deg,${c1} 0%,${c2} 100%);box-shadow:0 8px 32px rgba(${rgb},.35);--card-rgb:${rgb}">
-                    <button class="drag-handle" title="Drag to reorder" aria-label="Drag to reorder">${DRAG_HANDLE_SVG}</button>
-                    <button class="copy-btn" data-time-id="time-${id}" title="Copy time">${COPY_SVG}</button>
-                    <div class="result-flag">${meta.flag}</div>
-                    <div class="result-country">${meta.country}</div>
-                    <div class="result-city">${meta.city}</div>
-                    <div class="result-time" id="time-${id}">&mdash;</div>
-                    <div><span class="day-badge day-same" id="day-${id}"> </span></div>
-                </div>`;
-    }).join('');
+const node = (tag, cls, text) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;
+    return n;
+};
+
+/** The visitor's home zone: neo_me's, else this device's, when Client Says shows it. */
+export function currentHome() {
+    let raw = null;
+    try { raw = readMe(document.cookie); } catch {}
+    return homeZone(withDefaults(raw || {}), TARGET_META.keys());
 }
 
-// ── Render country picker content (optionally filtered by query) ─────────────
+/** Faces of the workspace people in a zone: the kit's colour and initials, names for screen readers. */
+function facesFor(tz) {
+    if (!state.teamWs || !state.teamId) return null;
+    const team = state.teamId === '*' ? null : pickTeam(state.teamWs, state.teamId);
+    const people = peopleInZone(state.teamWs, team, tz);
+    if (!people.length) return null;
+    const box = node('div', 'result-people');
+    const row = node('div', 'cs-faces');
+    row.setAttribute('aria-hidden', 'true');
+    for (const p of people.slice(0, FACES)) {
+        const bg = colorFor(p);
+        const f = node('span', 'cs-face', initials(p.name));
+        f.style.setProperty('--face', bg);
+        f.style.setProperty('--face-ink', inkOn(bg));
+        f.title = p.name;
+        row.append(f);
+    }
+    if (people.length > FACES) row.append(node('span', 'cs-face cs-face-more', `+${people.length - FACES}`));
+    const names = people.slice(0, 12).map(p => p.name).join(', ') + (people.length > 12 ? `, and ${people.length - 12} more` : '');
+    box.append(row, node('span', 'sr-only', `Here: ${names}`));
+    return box;
+}
+
+// ── Render result cards from state.targets (DOM only, no markup from data) ──
+export function renderResultCards() {
+    const grid = document.getElementById('results-grid');
+    const home = currentHome();
+    const shown = state.targets.filter(tz => TARGET_META.has(tz));
+    const cards = shown.map((tz, i) => {
+        const meta = TARGET_META.get(tz);
+        const id = tzToId(tz);
+        const card = node('article', `result-card tone-${i % TONES}`);
+        card.id = `card-${id}`;
+        card.dataset.tz = tz;
+        card.setAttribute('aria-label', `${meta.country}, ${meta.city}`);
+
+        const handle = node('button', 'drag-handle');
+        handle.type = 'button';
+        handle.dataset.tz = tz;
+        handle.setAttribute('aria-label', `Move ${placeName(tz)}: position ${i + 1} of ${shown.length}`);
+        handle.setAttribute('aria-keyshortcuts', 'ArrowLeft ArrowRight');
+        handle.title = 'Drag, or use the arrow keys, to reorder';
+        handle.innerHTML = DRAG_HANDLE_SVG;
+
+        const copy = node('button', 'copy-btn');
+        copy.type = 'button';
+        copy.dataset.timeId = `time-${id}`;
+        copy.setAttribute('aria-label', `Copy the time in ${placeName(tz)}`);
+        copy.title = 'Copy time';
+        copy.innerHTML = COPY_SVG;
+
+        const flag = node('div', 'result-flag', meta.flag);
+        flag.setAttribute('aria-hidden', 'true');
+        const time = node('div', 'result-time', '\u2014');
+        time.id = `time-${id}`;
+        const metaRow = node('div', 'result-meta');
+        const off = node('span', 'result-offset');
+        off.id = `off-${id}`;
+        const day = node('span', 'day-badge day-same', ' ');
+        day.id = `day-${id}`;
+        metaRow.append(off, day);
+        card.append(handle, copy, flag, node('div', 'result-country', meta.country), node('div', 'result-city', meta.city), time, metaRow);
+        if (tz === home) card.append(node('div', 'result-home', 'Your zone'));
+        const faces = facesFor(tz);
+        if (faces) card.append(faces);
+        return card;
+    });
+    grid.replaceChildren(...cards);
+}
+
+// ── Render the destination picker (optionally filtered by query) ─────────────
 export function renderPicker(query = '') {
     const list = document.getElementById('picker-list');
-    const q = query.trim().toLowerCase();
+    const raw = String(query).trim();
+    const q = raw.toLowerCase();
     const regions = [...new Set(AVAILABLE_TARGETS.map(t => t.region))];
     const html = regions.map(region => {
         const items = AVAILABLE_TARGETS.filter(t => {
@@ -60,19 +125,22 @@ export function renderPicker(query = '') {
                 .toLowerCase().includes(q);
         });
         if (items.length === 0) return '';
-        return `<div class="picker-region">${region}</div>`
+        return `<div class="picker-region" role="presentation">${esc(region)}</div>`
             + items.map(meta => `
                 <label class="picker-item">
-                    <input type="checkbox" class="picker-checkbox" data-tz="${meta.tz}"
+                    <input type="checkbox" class="picker-checkbox" data-tz="${esc(meta.tz)}"
                            ${state.targets.includes(meta.tz) ? 'checked' : ''}>
-                    <span class="picker-flag">${meta.flag}</span>
+                    <span class="picker-flag" aria-hidden="true">${esc(meta.flag)}</span>
                     <span class="picker-info">
-                        <span class="picker-primary">${meta.city}</span>
-                        <span class="picker-secondary">${meta.country}</span>
+                        <span class="picker-primary">${esc(meta.city)}</span>
+                        <span class="picker-secondary">${esc(meta.country)}</span>
                     </span>
                 </label>`).join('');
     }).join('');
-    list.innerHTML = html || '<div class="picker-no-results">No results for that search.</div>';
+    if (html) { list.innerHTML = html; return; }
+    // The typed query reaches the page as text only.
+    list.replaceChildren(node('p', 'picker-no-results',
+        `No destination matches \u201c${raw}\u201d. Try a city, a country or a zone such as Tokyo, Brazil or CET.`));
 }
 
 // ── Save selected destinations to localStorage ───────────────────────────────
@@ -128,7 +196,9 @@ export function cbRender() {
     const { tzDropdown } = els();
     tzDropdown.innerHTML = '';
     if (cb.filtered.length === 0) {
-        tzDropdown.innerHTML = '<div class="tz-no-results">No timezones match "' + cb.query + '"</div>';
+        // The typed query reaches the page as text only, never as markup.
+        tzDropdown.append(node('div', 'tz-no-results',
+            `No time zone matches \u201c${cb.query}\u201d. Try a city or an abbreviation such as Chicago or PST.`));
         return;
     }
     let lastGroup = null;
@@ -146,18 +216,22 @@ export function cbRender() {
             + (opt.id === state.selectedTZ ? ' is-selected' : '');
         el.setAttribute('role', 'option');
         el.setAttribute('aria-selected', opt.id === state.selectedTZ);
-        el.innerHTML = `<span class="tz-abbr">${hl(opt.abbr, cb.query)}</span>`
-                     + `<span class="tz-label">${hl(opt.label, cb.query)}</span>`;
+        el.id = `tz-opt-${i}`;
+        el.innerHTML = `<span class="tz-abbr">${highlight(opt.abbr, cb.query)}</span>`
+                     + `<span class="tz-label">${highlight(opt.label, cb.query)}</span>`;
         el.addEventListener('mousedown', e => { e.preventDefault(); cbSelect(opt.id); });
         el.addEventListener('mousemove', () => { cb.active = i; cbMarkActive(); });
         tzDropdown.appendChild(el);
     });
+    cbMarkActive();
 }
 
 export function cbMarkActive() {
-    const { tzDropdown } = els();
+    const { tzDropdown, tzInput } = els();
     tzDropdown.querySelectorAll('.tz-option')
         .forEach((el, i) => el.classList.toggle('active', i === cb.active));
+    if (cb.active >= 0) tzInput.setAttribute('aria-activedescendant', `tz-opt-${cb.active}`);
+    else tzInput.removeAttribute('aria-activedescendant');
 }
 
 export function cbScrollActive() {
@@ -175,7 +249,7 @@ export function cbOpen_() {
     cb.query = '';
     cbRender();
     tzDropdown.style.display = 'block';
-    tzCombobox.setAttribute('aria-expanded', 'true');
+    tzInput.setAttribute('aria-expanded', 'true');
     tzCombobox.classList.add('open');
     // Scroll current selection into view
     const idx = cb.filtered.findIndex(o => o.id === state.selectedTZ);
@@ -187,7 +261,8 @@ export function cbClose(restoreVal = true) {
     const { tzInput, tzDropdown, tzCombobox } = els();
     cb.open = false;
     tzDropdown.style.display = 'none';
-    tzCombobox.setAttribute('aria-expanded', 'false');
+    tzInput.setAttribute('aria-expanded', 'false');
+    tzInput.removeAttribute('aria-activedescendant');
     tzCombobox.classList.remove('open');
     if (restoreVal) tzInput.value = cbDisplayText(state.selectedTZ);
     sizeTzInput();
@@ -239,10 +314,11 @@ export function convert() {
         if (state.use24h) {
             timeEl.textContent = raw;
         } else {
-            const [timePart, ampmPart] = raw.split(' ');
-            timeEl.innerHTML = timePart
-                + `<span class="result-ampm">${ampmPart}</span>`;
+            const [timePart, ampmPart = ''] = raw.split(/\s+/);
+            timeEl.replaceChildren(timePart, node('span', 'result-ampm', ampmPart));
         }
+        const offEl = document.getElementById(`off-${id}`);
+        if (offEl) offEl.textContent = fmtOffset(tzOffsetMin(tz, actual));
         timeEl.classList.add('pop');
 
         // Day offset badge
@@ -284,23 +360,19 @@ export function saveDefaults() {
 }
 
 export function loadSaved() {
-    try { return JSON.parse(localStorage.getItem(LS_KEY)); } catch { return null; }
+    let raw = null;
+    try { raw = JSON.parse(localStorage.getItem(LS_KEY)); } catch {}
+    return raw ? cleanTime(raw, SOURCE_IDS) : null;
 }
 
-// ── URL share ────────────────────────────────────────────────────────────────
+// ── URL share (?h=&m=&ap=&tz=&fmt=), each value checked ──────────────────────
 export function loadFromURL() {
-    const inpHour = document.getElementById('inp-hour');
-    const inpMin  = document.getElementById('inp-min');
-    const btnAmpm = document.getElementById('inp-ampm');
-    const p = new URLSearchParams(location.search);
-    if (!p.has('h')) return false;
-    if (p.has('h'))  inpHour.value       = p.get('h');
-    if (p.has('m'))  inpMin.value        = p.get('m');
-    if (p.has('ap')) btnAmpm.textContent = p.get('ap');
-    if (p.has('fmt')) state.use24h = p.get('fmt') === '24';
-    if (p.has('tz')) {
-        const id = p.get('tz');
-        if (TZ_FLAT.find(o => o.id === id)) state.selectedTZ = id;
-    }
+    const got = timeFromQuery(location.search, SOURCE_IDS);
+    if (!got) return false;
+    if (got.hour)   document.getElementById('inp-hour').value = got.hour;
+    if (got.minute) document.getElementById('inp-min').value  = got.minute;
+    if (got.ampm)   document.getElementById('inp-ampm').textContent = got.ampm;
+    if (got.fmt)    state.use24h = got.fmt === '24';
+    if (got.tz)     state.selectedTZ = got.tz;
     return true;
 }

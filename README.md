@@ -44,8 +44,10 @@ Enter the time and timezone a client used (say *"3 PM ET"*) and the page shows i
 
 - **Searchable timezone picker**: type to filter by name, city, abbreviation, or alias (see table below). Arrow keys, Enter, and Tab all work.
 - **Abbreviation aliases**: clients say things like "ET" instead of "EST". The search understands both.
-- **Pick destinations**: 44 places, searched by country, city or timezone id, dragged into the order you want.
-- **Day badge**: each card says same day, next day or previous day, so a 9 PM call does not land on the wrong date.
+- **Pick destinations**: 44 places, searched by country, city or timezone id, dragged (or moved with the arrow keys on a card's handle) into the order you want.
+- **Your team's zones**: with a team in your [Neorgon Workspace](https://neorgon.com/workspace/), Settings (the gear, or the `,` key) adds the distinct zones its people work in as cards, with their faces on each card. Zones Client Says cannot show yet are listed by name, never dropped.
+- **Your settings, shared**: your home zone and time format come from the Neorgon Workspace settings every planning tool reads; the card for your zone says so.
+- **Day badge and offset**: each card says same day, next day or previous day, and its UTC offset for today, so a 9 PM call does not land on the wrong date.
 - **Settings remembered**: your last time, timezone, 12h/24h choice and destination list are saved in `localStorage` and restored on the next visit.
 - **Share link**: copies a URL with the time, AM/PM, source timezone and format as query params. Destinations are not in the link, so whoever opens it sees their own.
 - **Copy per card**: clipboard button on each result card.
@@ -102,8 +104,14 @@ client-says-site/
 │   ├── app.js          # Entry point
 │   ├── state.js        # Timezone + localStorage
 │   ├── render.js       # Result cards
-│   ├── events.js       # Search, share, copy, now button
-│   └── utils.js        # Helpers
+│   ├── events.js       # Search, share, copy, now button, picker, reorder
+│   ├── model.js        # Pure checks and the Workspace adapter (Node-tested)
+│   ├── team.js         # The Neorgon Workspace: settings, team zones, the Settings section
+│   ├── utils.js        # Helpers
+│   └── neorgon-*.js    # Vendored kits (header, footer, workspace, persist); never edit
+├── tests/
+│   ├── model.test.mjs  # node --test tests/*.test.mjs
+│   └── browser.mjs     # Playwright, three engines, with neorgon-site as the frame
 └── jargon/
     └── index.html      # Jargon translator, single file
 ```
@@ -113,7 +121,9 @@ client-says-site/
 ## Running locally
 
 ```bash
-make serve   # http://localhost:8803
+make serve          # http://localhost:8803
+make test           # the adapter and checks, in Node
+make test-browser   # Chromium, Firefox and WebKit, against local servers on 9380 and 9381
 ```
 
 The converter uses ES modules, so it needs an HTTP server. The jargon page is one self-contained file and opens directly.

@@ -5,8 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-make serve      # Start dev server at http://localhost:8803
-make kill       # Stop the server
+make serve         # Start dev server at http://localhost:8803
+make kill          # Stop the server
+make test          # node --test tests/*.test.mjs (model.js: checks and the Workspace adapter)
+make test-browser  # Playwright, three engines; starts this site on 9380 and neorgon-site (the frame) on 9381
 ```
 
 The timezone converter (`index.html`) uses ES modules and requires an HTTP server, `file://` won't work. The jargon page (`jargon/index.html`) is a self-contained single file and can be opened directly.
@@ -27,15 +29,26 @@ This repo holds two independent tools under the same domain (`clientsays.neorgon
 
 | Module | Role |
 |---|---|
-| `js/state.js` | Mutable `state` object (`selectedTZ`, `use24h`, `savedTimer`, `targets`); all static data: `TZ_GROUPS` (30 source zones), `TZ_ALIASES`, `TZ_FLAT`, `AVAILABLE_TARGETS` (44 destinations), `LS_KEY`, `LS_KEY_TARGETS` |
+| `js/state.js` | Mutable `state` object (`selectedTZ`, `use24h`, `savedTimer`, `targets`, `teamWs`, `teamId`); all static data: `TZ_GROUPS` (30 source zones), `TZ_ALIASES`, `TZ_FLAT`, `AVAILABLE_TARGETS` (44 destinations), `LS_KEY`, `LS_KEY_TARGETS`, `LS_KEY_TEAM` |
 | `js/render.js` | `convert()`: core conversion logic; `renderResultCards()` / `renderPicker()` / `saveTargets()`; combobox open/close/render/select; `saveDefaults()` / `loadSaved()` / `loadFromURL()` |
 | `js/events.js` | All DOM event listeners via `bindEvents()` |
-| `js/utils.js` | `getH12()`, `getMin()`, `getAmpm()`, `tzOffsetMin()`, `buildShareURL()`, `showToast()`, `flashBtn()`, `hl()` |
-| `js/app.js` | Entry point only: reads URL params or localStorage, seeds DOM inputs, calls `convert()` and `bindEvents()` |
+| `js/utils.js` | `getH12()`, `getMin()`, `getAmpm()`, `tzOffsetMin()`, `fmtOffset()`, `buildShareURL()`, `showToast()`, `flashBtn()` |
+| `js/model.js` | Pure, no DOM, Node-tested: `esc()`, `highlight()`, `cleanTargets()`, `cleanTime()`, `timeFromQuery()`, and the Workspace adapter (`pickTeam`, `teamZones`, `mergeTargets`, `peopleInZone`, `describeAdd`, `homeZone`, `prefers24h`) |
+| `js/team.js` | The Neorgon Workspace: `NeoWorkspace.init({ tool: 'clientsays' })`, the gear, the use action ("Add my team's zones"), the Client Says section of the Settings sheet, the `#team-note` |
+| `js/app.js` | Entry point only: starts the Workspace client first, reads URL params, localStorage or your settings, seeds DOM inputs, calls `convert()` and `bindEvents()` |
+| `js/neorgon-workspace*.js`, `js/neorgon-persist.js`, `css/neorgon-workspace.css` | Vendored kits. Never edit: change `packages/neorgon-ui/workspace/` and run `sync-workspace.sh` |
 
 ### State initialisation priority
 
-`loadFromURL()` (query params `?h=&m=&ap=&tz=&fmt=`) → `loadSaved()` (localStorage key `clientsays-v1`) → current local time + detected timezone via `Intl.DateTimeFormat().resolvedOptions().timeZone`.
+`loadFromURL()` (query params `?h=&m=&ap=&tz=&fmt=`), then `loadSaved()` (localStorage key `clientsays-v1`), then your Workspace settings (`neo_me`: the home zone as the source zone when the combobox lists it, the time format), then the device. Every value from the query and from localStorage goes through `cleanTime()` / `cleanTargets()` in `model.js`; nothing unchecked reaches the page.
+
+### The Neorgon Workspace (read only)
+
+The contract is `docs/plans/2026-11-03-neorgon-workspace.md` in the monorepo; the kit is `packages/neorgon-ui/workspace/`. Client Says reads and never writes:
+
+- **Settings** (`neo_me`): the home zone (default source zone, and the "Your zone" line on that destination's card) and the time format.
+- **The team**: "Add my team's zones" (the sheet's use action) adds the distinct zones of your team (the first team your `me.person` is in, else the first team) as cards; the section offers any other team or everyone. Zones not in `AVAILABLE_TARGETS` (another IANA zone, an offset) and people with no zone are listed in `#team-note`, never dropped. The team last used is `clientsays-team-v1` (`'*'` for everyone); its people show as faces on the cards with the kit's `colorFor` / `inkOn` / `initials`.
+- The CSP's `frame-src` is `https://neorgon.com http://localhost:8800`. The browser test reaches its frame on 9381 with Playwright's `bypassCSP` and checks the CSP string separately.
 
 ### Conversion logic (`convert()` in `render.js`)
 
@@ -43,7 +56,7 @@ Uses today's date as the calendar anchor, so the offset is right for today and *
 
 ### Destinations
 
-`state.targets` is a user-editable array of IANA ids, seeded from `localStorage` key `clientsays-targets-v1` and defaulting to `['America/Santiago', 'America/Bogota', 'America/Mexico_City']`. The picker modal lists all 44 entries of `AVAILABLE_TARGETS` grouped by `region`; checking one pushes it, unchecking removes it (minimum 1). Cards are rendered from `state.targets` by `renderResultCards()` and reordered by pointer drag in `events.js`, and both paths call `saveTargets()`. The share URL (`buildShareURL()`) carries `h m ap tz fmt` only, never the destinations.
+`state.targets` is a user-editable array of IANA ids, seeded from `localStorage` key `clientsays-targets-v1` and defaulting to `['America/Santiago', 'America/Bogota', 'America/Mexico_City']`. The picker (a native `<dialog>`, so it is out of the tab order while closed and Escape closes it) lists all 44 entries of `AVAILABLE_TARGETS` grouped by `region`; checking one pushes it, unchecking removes it (minimum 1). Cards are built with DOM calls (no markup from data) from `state.targets` by `renderResultCards()`, each with its UTC offset, and reordered by pointer drag or by the arrow keys on a card's handle (`moveTarget()` in `events.js`); every path calls `saveTargets()`. The share URL (`buildShareURL()`) carries `h m ap tz fmt` only, never the destinations.
 
 ### Timezone combobox
 
@@ -63,12 +76,16 @@ All data is a hardcoded `PHRASES` array in the script block (116 entries). Filte
 |---|---|
 | Background | `#040714` |
 | Glass cards | `rgba(255,255,255,.03)` surface, `rgba(255,255,255,.1)` border |
-| Accent blue | `#0063e5` / `#0080ff` |
+| Accent | One pink family, the hub card's: `--accent #f472b6`, `--accent-bright #f9a8d4`, `--accent-strong #be185d` (filled controls, white text), `--accent-deep #831843`; cards use `--tone-0..3`, all in `:root` of `css/style.css` |
 | Header gradient | `135deg, #B015B0 0%, #3D0080 50%, #040714 100%` |
 | Font | `'Avenir Next'` → system font stack |
+
+Reading text is 12px or larger and every control is at least 44px; `tests/browser.mjs` checks both.
 
 ## Known CSS Gotchas
 
 - `backdrop-filter` on `.card` creates a stacking context: dropdowns that overlap it need `position: relative; z-index: 10` on the input card.
 - `body { display: flex; flex-direction: column }` + `margin: 0 auto` on a child collapses its width: pair with explicit `width: 100%`.
 - The `.tz-combobox` input width is controlled programmatically via `sizeTzInput()` when closed, and reverts to CSS when open (the `.open` class removes the inline width).
+- A native `<dialog>`'s `close` event is queued, so it can land after focus has moved on (the Settings sheet's "Edit destinations" closes the sheet and opens the picker in one click). The picker's close handler returns focus to its opener only when focus is still on `body` or inside the picker; the kit's sheet does the same.
+- Escape inside the picker's `type="search"` field only clears the field in Chromium; the dialog's own `keydown` closes it at once.

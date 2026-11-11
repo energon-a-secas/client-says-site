@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://gc.zgo.at https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://cdn.neorgon.org; img-src 'self' data: blob: https://cdn.neorgon.org https://neorgon.goatcounter.com; connect-src 'self' https://neorgon.goatcounter.com https://cloudflareinsights.com">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://gc.zgo.at https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://cdn.neorgon.org; img-src 'self' data: blob: https://cdn.neorgon.org https://neorgon.goatcounter.com; connect-src 'self' https://neorgon.goatcounter.com https://cloudflareinsights.com; frame-src https://neorgon.com http://localhost:8800">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
@@ -31,6 +31,7 @@
     <meta property="og:image:height" content="630">
     <link rel="stylesheet" href="https://cdn.neorgon.org/v1.0.0/styles/base.css">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/neorgon-workspace.css">
   <!-- Neorgon Header Kit (vendored; ?header=live swaps CSS to CDN) -->
   <script>(function(){var m=location.search.match(/[?&]theme=([\w-]+)/)||document.cookie.match(/(?:^|;\s*)neo_theme=([\w-]+)/);if(m&&m[1]!=='default')document.documentElement.dataset.theme=decodeURIComponent(m[1]);})();</script>
   <link rel="stylesheet" href="css/neorgon-header.css">
@@ -103,38 +104,38 @@
             <!-- Row 1: hour : minute AM/PM -->
             <div class="time-group">
                 <button type="button" class="step-btn" id="btn-hour-down" aria-label="Decrease hour">
-                    <svg width="9" height="14" viewBox="0 0 9 14" fill="currentColor"><polygon points="8,0 8,14 0,7"/></svg>
+                    <svg width="9" height="14" viewBox="0 0 9 14" fill="currentColor" aria-hidden="true"><polygon points="8,0 8,14 0,7"/></svg>
                 </button>
                 <input type="text" id="inp-hour" class="time-input"
                        maxlength="2" inputmode="numeric"
                        placeholder="12" aria-label="Hour">
-                <span class="time-colon">:</span>
+                <span class="time-colon" aria-hidden="true">:</span>
                 <input type="text" id="inp-min" class="time-input"
                        maxlength="2" inputmode="numeric"
                        placeholder="00" aria-label="Minute">
                 <button type="button" id="inp-ampm" class="ampm-toggle"
                         aria-label="Toggle AM or PM">PM</button>
                 <button type="button" class="step-btn" id="btn-hour-up" aria-label="Increase hour">
-                    <svg width="9" height="14" viewBox="0 0 9 14" fill="currentColor"><polygon points="1,0 1,14 9,7"/></svg>
+                    <svg width="9" height="14" viewBox="0 0 9 14" fill="currentColor" aria-hidden="true"><polygon points="1,0 1,14 9,7"/></svg>
                 </button>
             </div>
 
             <!-- Row 2: timezone -->
-            <div class="tz-combobox" id="tz-combobox"
-                 role="combobox" aria-haspopup="listbox" aria-expanded="false">
+            <div class="tz-combobox" id="tz-combobox">
                 <div class="tz-combobox-inner">
                     <input class="tz-input" id="tz-input" type="text"
+                           role="combobox" aria-controls="tz-dropdown" aria-expanded="false" aria-autocomplete="list"
                            autocomplete="off" spellcheck="false"
-                           aria-label="Timezone: type to search"
+                           aria-label="The client's time zone: type to search"
                            placeholder="Search timezone…">
                     <span id="tz-sizer" aria-hidden="true"></span>
                 </div>
-                <div class="tz-dropdown" id="tz-dropdown" role="listbox"></div>
+                <div class="tz-dropdown" id="tz-dropdown" role="listbox" aria-label="Time zones"></div>
             </div>
         </div>
 
-        <button class="now-btn" id="btn-now" title="Set to current local time">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+        <button type="button" class="now-btn" id="btn-now" title="Set to the current time on this device">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"
                  stroke="currentColor" stroke-width="2.5"
                  stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"/>
@@ -143,7 +144,7 @@
             now
         </button>
         <div class="sentence-meta">
-            <div class="saved-indicator" id="saved-indicator">
+            <div class="saved-indicator" id="saved-indicator" aria-hidden="true">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="3"
                      stroke-linecap="round" stroke-linejoin="round">
@@ -159,7 +160,7 @@
 
     <!-- ── Destinations bar ─────────────────────────────────────────────── -->
     <div class="destinations-bar">
-        <button class="add-dest-btn" id="btn-add-destinations" aria-label="Edit destinations">
+        <button type="button" class="add-dest-btn" id="btn-add-destinations" aria-haspopup="dialog">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2.5"
                  stroke-linecap="round" stroke-linejoin="round">
@@ -170,14 +171,17 @@
         </button>
     </div>
 
-    <!-- ── Country picker modal ──────────────────────────────────────────── -->
-    <div class="picker-overlay" id="country-picker-modal" role="dialog" aria-modal="true" aria-label="Edit destinations">
+    <!-- What adding a team's zones did; filled by team.js with text only -->
+    <div class="team-note" id="team-note" role="status"></div>
+
+    <!-- ── Destination picker (native dialog: out of the tab order while closed) ── -->
+    <dialog class="picker-dialog" id="country-picker-modal" aria-labelledby="picker-title">
         <div class="picker-panel">
             <div class="picker-header">
-                <span class="picker-title">Destinations</span>
-                <button class="picker-close" id="picker-close" aria-label="Close">
+                <h2 class="picker-title" id="picker-title">Destinations</h2>
+                <button type="button" class="picker-close" id="picker-close" aria-label="Close destinations">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="2.5"
+                         stroke="currentColor" stroke-width="2.5" aria-hidden="true"
                          stroke-linecap="round" stroke-linejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18"/>
                         <line x1="6" y1="6" x2="18" y2="18"/>
@@ -185,20 +189,21 @@
                 </button>
             </div>
             <div class="picker-search-wrap">
-                <svg class="picker-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                <svg class="picker-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"
                      stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 </svg>
-                <input id="picker-search" type="search" class="picker-search-input"
+                <input id="picker-search" type="search" class="picker-search-input" aria-label="Search destinations"
                        placeholder="Search country, city, flag, timezone…" autocomplete="off" spellcheck="false">
             </div>
+            <p class="picker-hint">Pick at least one. Your choice stays in this browser.</p>
             <div class="picker-list" id="picker-list"></div>
         </div>
-    </div>
+    </dialog>
 
     <!-- ── Actions bar ──────────────────────────────────────────────────── -->
     <div class="actions-bar">
-        <button class="share-btn" id="btn-share">
+        <button type="button" class="share-btn" id="btn-share">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2"
                  stroke-linecap="round" stroke-linejoin="round">
@@ -212,8 +217,8 @@
         </button>
 
         <div class="toggle-group" role="group" aria-label="Time format">
-            <button class="toggle-btn active" id="btn-12h" data-fmt="12" aria-pressed="true">12h</button>
-            <button class="toggle-btn"        id="btn-24h" data-fmt="24" aria-pressed="false">24h</button>
+            <button type="button" class="toggle-btn active" id="btn-12h" data-fmt="12" aria-pressed="true">12h</button>
+            <button type="button" class="toggle-btn"        id="btn-24h" data-fmt="24" aria-pressed="false">24h</button>
         </div>
     </div>
 
